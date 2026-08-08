@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fleet Maintenance Log</title>
+    <title>Fleet & Boat Maintenance Logbook</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Classic aviation logbook styling accent */
+        /* Classic logbook grid styling accent */
         .logbook-grid {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
@@ -21,8 +21,8 @@
     <header class="bg-[#091322] border-b border-blue-900/60 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <i class="fa-solid fa-plane text-yellow-400 text-2xl"></i>
-                <h1 class="text-xl font-bold tracking-wide text-yellow-400">Fleet Maintenance Logbook</h1>
+                <i class="fa-solid fa-anchor text-yellow-400 text-2xl"></i>
+                <h1 class="text-xl font-bold tracking-wide text-yellow-400">Fleet & Boat Maintenance Logbook</h1>
             </div>
             <button onclick="openModal()" class="bg-yellow-400 hover:bg-yellow-300 text-[#050b14] px-4 py-2 rounded-lg font-bold transition flex items-center space-x-2 shadow-lg shadow-yellow-400/15">
                 <i class="fa-solid fa-pen-nib"></i>
@@ -41,7 +41,7 @@
                 <h3 id="totalLogs" class="text-3xl font-bold mt-2 text-yellow-400">0</h3>
             </div>
             <div class="bg-[#091322] border border-blue-900/50 p-6 rounded-xl shadow-md">
-                <p class="text-blue-400 text-sm font-medium">Total Airframe Expenses</p>
+                <p class="text-blue-400 text-sm font-medium">Total Maintenance Expenses</p>
                 <h3 id="totalCost" class="text-3xl font-bold mt-2 text-yellow-400">$0.00</h3>
             </div>
             <div class="bg-[#091322] border border-blue-900/50 p-6 rounded-xl shadow-md">
@@ -52,7 +52,7 @@
 
         <!-- Filter / Search Section -->
         <div class="bg-[#091322] border border-blue-900/50 p-4 rounded-xl mb-6 flex flex-col md:flex-row justify-between gap-4">
-            <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Search by tail no., system, or description..." class="bg-[#050b14] border border-blue-900/60 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-yellow-400 w-full md:w-80 text-blue-100 placeholder-blue-500/50">
+            <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Search by vessel, system, or description..." class="bg-[#050b14] border border-blue-900/60 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-yellow-400 w-full md:w-80 text-blue-100 placeholder-blue-500/50">
             <select id="statusFilter" onchange="renderTable()" class="bg-[#050b14] border border-blue-900/60 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-yellow-400 w-full md:w-48 text-blue-100">
                 <option value="">All Statuses</option>
                 <option value="Completed">Signed Off / Completed</option>
@@ -61,16 +61,16 @@
             </select>
         </div>
 
-        <!-- Table Log Section (Structured like an actual aircraft logbook table) -->
+        <!-- Table Log Section (Structured like a nautical logbook) -->
         <div class="bg-[#091322] border border-blue-900/50 rounded-xl shadow-md overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-[#070e1b] text-yellow-400 text-xs uppercase tracking-wider border-b border-blue-900/60">
                             <th class="p-4">Date</th>
-                            <th class="p-4">Tail No.</th>
-                            <th class="p-4">Tach / Hours</th>
-                            <th class="p-4">Category</th>
+                            <th class="p-4">Vessel / Boat</th>
+                            <th class="p-4">Engine / Running Hours</th>
+                            <th class="p-4">System / Category</th>
                             <th class="p-4">Maintenance Description & Cert.</th>
                             <th class="p-4">Cost</th>
                             <th class="p-4">Status</th>
@@ -93,15 +93,15 @@
     <div id="recordModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-[#091322] border border-blue-900/60 rounded-2xl max-w-xl w-full p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
-                <h2 id="modalTitle" class="text-lg font-bold text-yellow-400">Aircraft Logbook Entry</h2>
+                <h2 id="modalTitle" class="text-lg font-bold text-yellow-400">Vessel Logbook Entry</h2>
                 <button onclick="closeModal()" class="text-blue-400 hover:text-yellow-400"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <form id="maintenanceForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
                 <input type="hidden" id="recordId">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Aircraft Tail Number</label>
-                        <input type="text" id="vesselName" required placeholder="e.g., N172SP" class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-500/50">
+                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Vessel / Boat Name</label>
+                        <input type="text" id="vesselName" required placeholder="e.g., Sea Wolf, Trawler 04" class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-500/50">
                     </div>
                     <div>
                         <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Date</label>
@@ -111,25 +111,25 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">System / Component</label>
+                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">System / Category</label>
                         <select id="category" required class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100">
-                            <option value="Engine">Engine / Powerplant</option>
-                            <option value="Propeller">Propeller</option>
-                            <option value="Avionics">Avionics / Instruments</option>
-                            <option value="Airframe">Airframe / Control Surfaces</option>
-                            <option value="Landing Gear">Landing Gear / Brakes</option>
-                            <option value="Inspection">Annual / 100-Hr Inspection</option>
+                            <option value="Engine">Engine / Propulsion</option>
+                            <option value="Electrical">Electrical System</option>
+                            <option value="Hull & Deck">Hull & Deck</option>
+                            <option value="Plumbing">Plumbing & Bilge</option>
+                            <option value="Safety">Safety Equipment</option>
+                            <option value="Rigging">Rigging & Sails</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Aircraft Tach / Hours</label>
-                        <input type="text" id="tachHours" required placeholder="e.g., 2,450.8 Hrs" class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-500/50">
+                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Engine / Running Hours</label>
+                        <input type="text" id="engineHours" required placeholder="e.g., 1,250.4 Hrs" class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-500/50">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Description / Logbook Endorsement</label>
-                    <textarea id="description" rows="3" required placeholder="Description of work performed, parts replaced, and airworthiness compliance..." class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-500/50"></textarea>
+                    <textarea id="description" rows="3" required placeholder="Description of service performed, parts replaced, and sea-worthiness note..." class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-500/50"></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -157,14 +157,14 @@
 
     <!-- JavaScript Logic -->
     <script>
-        let logs = JSON.parse(localStorage.getItem('aircraft_logbook_entries')) || [
-            { id: 1, vessel: 'N172SP', tachHours: '2,142.5 Hrs', category: 'Engine', date: '2026-06-12', description: 'Replaced oil filters, drained sump, serviced with 8 qts Aeroshell 15W50.', cost: 350.00, status: 'Completed' },
-            { id: 2, vessel: 'N880Y', tachHours: '1,890.0 Hrs', category: 'Avionics', date: '2026-07-01', description: 'Performed annual pitot-static and transponder cert per FAR 91.411/413.', cost: 650.00, status: 'Completed' },
-            { id: 3, vessel: 'N172SP', tachHours: '2,180.2 Hrs', category: 'Inspection', date: '2026-08-05', description: 'Squawk: Left main gear brake pads thinning near wear limits. Parts ordered.', cost: 420.00, status: 'Pending' }
+        let logs = JSON.parse(localStorage.getItem('boat_logbook_entries')) || [
+            { id: 1, vessel: 'Sea Wolf', engineHours: '1,240.5 Hrs', category: 'Engine', date: '2026-06-12', description: 'Replaced oil filters and impeller, checked raw water pump.', cost: 350.00, status: 'Completed' },
+            { id: 2, vessel: 'Trawler 04', engineHours: '890.0 Hrs', category: 'Electrical', date: '2026-07-01', description: 'Replaced house battery bank AGM 12V and tested inverter output.', cost: 1200.50, status: 'Completed' },
+            { id: 3, vessel: 'Sea Wolf', engineHours: '1,280.2 Hrs', category: 'Hull & Deck', date: '2026-08-05', description: 'Scheduled bottom paint and zinc anode replacement pending yard haul-out.', cost: 850.00, status: 'Pending' }
         ];
 
         function saveToLocalStorage() {
-            localStorage.setItem('aircraft_logbook_entries', JSON.stringify(logs));
+            localStorage.setItem('boat_logbook_entries', JSON.stringify(logs));
         }
 
         function openModal(id = null) {
@@ -178,7 +178,7 @@
                 document.getElementById('recordId').value = record.id;
                 document.getElementById('vesselName').value = record.vessel;
                 document.getElementById('category').value = record.category;
-                document.getElementById('tachHours').value = record.tachHours;
+                document.getElementById('engineHours').value = record.engineHours;
                 document.getElementById('logDate').value = record.date;
                 document.getElementById('description').value = record.description;
                 document.getElementById('cost').value = record.cost;
@@ -204,7 +204,7 @@
                 id: id ? parseInt(id) : Date.now(),
                 vessel: document.getElementById('vesselName').value,
                 category: document.getElementById('category').value,
-                tachHours: document.getElementById('tachHours').value,
+                engineHours: document.getElementById('engineHours').value,
                 date: document.getElementById('logDate').value,
                 description: document.getElementById('description').value,
                 cost: parseFloat(document.getElementById('cost').value),
@@ -241,7 +241,7 @@
                 const matchesSearch = log.vessel.toLowerCase().includes(searchQuery) ||
                                       log.category.toLowerCase().includes(searchQuery) ||
                                       log.description.toLowerCase().includes(searchQuery) ||
-                                      log.tachHours.toLowerCase().includes(searchQuery);
+                                      log.engineHours.toLowerCase().includes(searchQuery);
                 const matchesStatus = statusFilter === "" || log.status === statusFilter;
                 return matchesSearch && matchesStatus;
             });
@@ -272,7 +272,7 @@
                 tr.innerHTML = `
                     <td class="p-4 whitespace-nowrap text-blue-300 text-xs">${log.date}</td>
                     <td class="p-4 whitespace-nowrap font-bold text-white">${log.vessel}</td>
-                    <td class="p-4 whitespace-nowrap text-yellow-400 text-xs font-semibold">${log.tachHours}</td>
+                    <td class="p-4 whitespace-nowrap text-yellow-400 text-xs font-semibold">${log.engineHours}</td>
                     <td class="p-4 whitespace-nowrap text-blue-300"><span class="bg-[#050b14] border border-blue-900 px-2.5 py-1 rounded-md text-xs text-blue-200">${log.category}</span></td>
                     <td class="p-4 text-blue-200 max-w-sm text-xs leading-relaxed">${log.description}</td>
                     <td class="p-4 whitespace-nowrap font-medium text-yellow-400">$${log.cost.toFixed(2)}</td>
