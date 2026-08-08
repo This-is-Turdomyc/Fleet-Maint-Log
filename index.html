@@ -102,11 +102,11 @@ textarea { resize: vertical; min-height: 70px; }
             <div class="form-grid"> 
                 <div class="form-group"> 
                     <label for="vessel-name">Vessel Name</label> 
-                    <input type="text" id="vessel-name" required list="vessel-list" placeholder="Launch 1, Yacht Alpha"> 
+                    <input type="text" id="vessel-name" required list="vessel-list"> 
                 </div> 
                 <div class="form-group"> 
                     <label for="equipment">Equipment / Component</label> 
-                    <input type="text" id="equipment" required list="equipment-list" placeholder="Port Main Engine, Gen 1..."> 
+                    <input type="text" id="equipment" required list="equipment-list"> 
                 </div> 
                 <div class="form-group"> 
                     <label for="category">Marine System / Category</label> 
@@ -138,11 +138,11 @@ textarea { resize: vertical; min-height: 70px; }
                 </div> 
                 <div class="form-group"> 
                     <label for="tech-name">Technician Name</label> 
-                    <input type="text" id="tech-name" required list="tech-list" placeholder="J. Smith"> 
+                    <input type="text" id="tech-name" required list="tech-list"> 
                 </div> 
                 <div class="form-group"> 
                     <label for="engine-hours">Engine / Generator Hours</label> 
-                    <input type="text" id="engine-hours" list="hours-list" placeholder="1420 hrs or N/A"> 
+                    <input type="text" id="engine-hours" list="hours-list"> 
                 </div> 
                 <div class="form-group"> 
                     <div id="rts-container" class="checkbox-group" style="margin-top: 20px;"> 
@@ -152,11 +152,11 @@ textarea { resize: vertical; min-height: 70px; }
                 </div> 
                 <div class="form-group full-width"> 
                     <label for="defect">Defect / Issue Observed</label> 
-                    <textarea id="defect" list="defect-list" placeholder="Describe squeak, leak, fault code, or observed issue..."></textarea> 
+                    <textarea id="defect" list="defect-list"></textarea> 
                 </div> 
                 <div class="form-group full-width"> 
                     <label for="work-done">Work Accomplished / Maintenance Action Taken</label> 
-                    <textarea id="work-done" required list="workdone-list" placeholder="Describe inspection findings, repairs, fluid changes, adjustments..."></textarea> 
+                    <textarea id="work-done" required list="workdone-list"></textarea> 
                 </div> 
 
                 <!-- Parts Builder Section --> 
@@ -177,7 +177,7 @@ textarea { resize: vertical; min-height: 70px; }
 
                 <div class="form-group"> 
                     <label for="labor-hours">Labor Hours</label> 
-                    <input type="number" step="0.5" id="labor-hours" placeholder="2.5"> 
+                    <input type="number" step="0.5" id="labor-hours"> 
                 </div> 
                 <div class="form-group"> 
                     <label for="media-files">Attach Photos or Videos</label> 
@@ -209,7 +209,7 @@ textarea { resize: vertical; min-height: 70px; }
                 </div> 
                 <div class="form-group" id="next-service-hours-group" style="display: none;"> 
                     <label for="next-service-hours">Next Service Due Hours</label> 
-                    <input type="text" id="next-service-hours" placeholder="1500 hrs"> 
+                    <input type="text" id="next-service-hours"> 
                 </div> 
             </div> 
             <button type="submit" class="btn" id="submit-btn">SAVE LOG ENTRY</button> 
@@ -351,10 +351,10 @@ function addPartRow(name = '', partNo = '', qty = '', cost = '') {
     rowDiv.className = 'part-row'; 
     rowDiv.id = rowId; 
     rowDiv.innerHTML = ` 
-        <input type="text" class="part-name" placeholder="Part Name" value="${name}" list="partname-list" required> 
-        <input type="text" class="part-number" placeholder="P/N or SKU" value="${partNo}" list="partno-list"> 
-        <input type="text" class="part-qty" placeholder="Qty / Unit" value="${qty}" list="partqty-list" required> 
-        <input type="text" class="part-cost" placeholder="Unit Cost ($)" value="${cost}" list="partcost-list" required> 
+        <input type="text" class="part-name" value="${name}" list="partname-list" required> 
+        <input type="text" class="part-number" value="${partNo}" list="partno-list"> 
+        <input type="text" class="part-qty" value="${qty}" list="partqty-list" required> 
+        <input type="text" class="part-cost" value="${cost}" list="partcost-list" required> 
         <button type="button" class="btn-small" style="background: var(--danger); color: white;" onclick="document.getElementById('${rowId}').remove()">✕</button> 
     `; 
     wrapper.appendChild(rowDiv); 
