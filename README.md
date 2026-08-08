@@ -1,53 +1,92 @@
-# 🛥️ Fleet Maintenance Log
+from datetime import datetime
+import json
+import os
 
-Welcome to the **Fleet Maintenance Log**. This repository is used to track routine service, repairs, and inspections for the fleet to ensure everything stays in top operational condition.
+DATA_FILE = "fleet_data.json"
 
----
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {
+            "vessels": [
+                {"id": "Vessel 01", "name": "Boston Whaler Outrage", "year": "2021", "type": "Outboard", "status": "Active"},
+                {"id": "Vessel 02", "name": "Grady-White Freedom", "year": "2020", "type": "Twin Outboard", "status": "Active"}
+            ],
+            "logs": []
+        }
+    with open(DATA_FILE, "r") as f:
+        return json.load(f)
 
-## 📋 Quick Navigation
-* [Active Fleet](#active-fleet)
-* [Maintenance Schedule](#maintenance-schedule)
-* [Log Entry Template](#log-entry-template)
-* [Recent Logs](#recent-logs)
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
----
+def display_fleet(data):
+    print("\n--- Active Fleet ---")
+    for v in data["vessels"]:
+        print(f"ID: {v['id']} | Name: {v['name']} ({v['year']}) | Type: {v['type']} | Status: {v['status']}")
 
-## 🚢 Active Fleet
+def display_logs(data):
+    print("\n--- Maintenance Logs ---")
+    if not data["logs"]:
+        print("No logs recorded yet.")
+        return
+    for log in data["logs"]:
+        print(f"\n[{log['date']}] {log['vessel']} - {log['type']}")
+        print(f"  Engine Hours: {log['hours']}")
+        print(f"  Performed By: {log['technician']}")
+        print(f"  Work Done: {log['work']}")
+        print(f"  Parts Used: {log['parts']}")
+        print(f"  Notes/Cost: {log['notes']}")
 
-| Vessel ID / Name | Make & Model | Year | Engine Type | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **Vessel 01** | *[e.g., Boston Whaler Outrage]* | *[YYYY]* | *[Outboard]* | 🟢 Active |
-| **Vessel 02** | *[e.g., Grady-White Freedom]* | *[YYYY]* | *[Twin Outboard]* | 🟢 Active |
-| **Vessel 03** | *[e.g., Sea Ray Sundancer]* | *[YYYY]* | *[Inboard/Outboard]* | 🟡 Service Due |
+def add_log(data):
+    print("\n--- Add Maintenance Log ---")
+    display_fleet(data)
+    vessel_id = input("Enter Vessel ID: ").strip()
+    date = input(f"Enter Date (YYYY-MM-DD) [default: {datetime.today().strftime('%Y-%m-%d')}]: ").strip() or datetime.today().strftime("%Y-%m-%d")
+    hours = input("Enter Current Engine Hours: ").strip()
+    m_type = input("Maintenance Type (Routine / Repair / Inspection / Emergency): ").strip()
+    technician = input("Performed By: ").strip()
+    work = input("Work Completed Summary: ").strip()
+    parts = input("Parts Used: ").strip()
+    notes = input("Notes / Cost: ").strip()
 
----
+    new_log = {
+        "vessel": vessel_id,
+        "date": date,
+        "hours": hours,
+        "type": m_type,
+        "technician": technician,
+        "work": work,
+        "parts": parts,
+        "notes": notes
+    }
 
-## ⏱️ Maintenance Schedule
+    data["logs"].append(new_log)
+    save_data(data)
+    print("✅ Maintenance log added successfully!")
 
-### Routine Intervals
-* **Every 50 Hours:** Check oil levels, inspect fuel filters, test bilge pumps, and inspect steering systems.
-* **Every 100 Hours / Annually:** Change engine oil and filters, replace spark plugs, inspect zinc anodes, and check lower unit gear lube.
-* **Pre-Season / Spring Commissioning:** Battery health check, hull inspection/cleaning, through-hull fitting checks, and safety equipment inventory (PFDs, flares, fire extinguishers).
-* **Winterization / Post-Season:** Flush cooling systems, add fuel stabilizer, winterize engines, and store batteries in a climate-controlled area.
+def main():
+    data = load_data()
+    while True:
+        print("\n=== 🛥️ FLEET MAINTENANCE MANAGER ===")
+        print("1. View Active Fleet")
+        print("2. View Maintenance Logs")
+        print("3. Add New Log Entry")
+        print("4. Exit")
 
----
+        choice = input("Select an option (1-4): ").strip()
 
-## 📝 Log Entry Template
+        if choice == "1":
+            display_fleet(data)
+        elif choice == "2":
+            display_logs(data)
+        elif choice == "3":
+            add_log(data)
+        elif choice == "4":
+            print("Exiting.")
+            break
+        else:
+            print("❌ Invalid choice.")
 
-Copy and paste the template below when adding a new entry to the maintenance records:
-
-```markdown
-### Log Entry: [YYYY-MM-DD] - [Vessel Name/ID]
-* **Date:** YYYY-MM-DD
-* **Vessel:** [Vessel Name/ID]
-* **Engine Hours:** [Current Hours]
-* **Maintenance Type:** [Routine / Repair / Inspection / Emergency]
-* **Performed By:** [Name / Technician / Marina]
-* **Work Completed:**
-  - [ ] Checked fluid levels
-  - [ ] Replaced fuel/oil filters
-  - [ ] Inspected belts and hoses
-  - [ ] Detailed description of work done...
-* **Parts Used:** [List part numbers or descriptions]
-* **Next Service Due At:** [Target Date or Engine Hours]
-* **Notes / Cost:** [$0.00 / Observations]
+if __name__ == "__main__":
+    main()
