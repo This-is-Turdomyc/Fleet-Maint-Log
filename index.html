@@ -9,16 +9,16 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-[#0b192c] text-blue-50 font-sans min-h-screen">
+<body class="bg-[#050b14] text-blue-100 font-sans min-h-screen">
 
     <!-- Header / Navigation -->
-    <header class="bg-[#1e3e62] border-b border-[#00ffcc]/20 shadow-lg">
+    <header class="bg-[#091322] border-b border-blue-900/60 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-anchor text-yellow-400 text-2xl"></i>
                 <h1 class="text-xl font-bold tracking-wide text-yellow-400">Fleet & Boat Maintenance Log</h1>
             </div>
-            <button onclick="openModal()" class="bg-yellow-400 hover:bg-yellow-300 text-[#0b192c] px-4 py-2 rounded-lg font-bold transition flex items-center space-x-2 shadow-lg shadow-yellow-400/20">
+            <button onclick="openModal()" class="bg-yellow-400 hover:bg-yellow-300 text-[#050b14] px-4 py-2 rounded-lg font-bold transition flex items-center space-x-2 shadow-lg shadow-yellow-400/10">
                 <i class="fa-solid fa-plus"></i>
                 <span>Add Maintenance Record</span>
             </button>
@@ -30,24 +30,24 @@
         
         <!-- Metrics / Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-[#1e3e62] border border-blue-500/30 p-6 rounded-xl shadow-md">
-                <p class="text-blue-200 text-sm font-medium">Total Maintenance Logs</p>
+            <div class="bg-[#091322] border border-blue-900/50 p-6 rounded-xl shadow-md">
+                <p class="text-blue-400 text-sm font-medium">Total Maintenance Logs</p>
                 <h3 id="totalLogs" class="text-3xl font-bold mt-2 text-yellow-400">0</h3>
             </div>
-            <div class="bg-[#1e3e62] border border-blue-500/30 p-6 rounded-xl shadow-md">
-                <p class="text-blue-200 text-sm font-medium">Total Spent</p>
+            <div class="bg-[#091322] border border-blue-900/50 p-6 rounded-xl shadow-md">
+                <p class="text-blue-400 text-sm font-medium">Total Spent</p>
                 <h3 id="totalCost" class="text-3xl font-bold mt-2 text-yellow-400">$0.00</h3>
             </div>
-            <div class="bg-[#1e3e62] border border-blue-500/30 p-6 rounded-xl shadow-md">
-                <p class="text-blue-200 text-sm font-medium">Pending Tasks</p>
+            <div class="bg-[#091322] border border-blue-900/50 p-6 rounded-xl shadow-md">
+                <p class="text-blue-400 text-sm font-medium">Pending Tasks</p>
                 <h3 id="pendingCount" class="text-3xl font-bold mt-2 text-yellow-400">0</h3>
             </div>
         </div>
 
         <!-- Filter / Search Section -->
-        <div class="bg-[#1e3e62] border border-blue-500/30 p-4 rounded-xl mb-6 flex flex-col md:flex-row justify-between gap-4">
-            <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Search by vessel, system, or description..." class="bg-[#0b192c] border border-blue-500/30 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-yellow-400 w-full md:w-80 text-blue-100 placeholder-blue-300/50">
-            <select id="statusFilter" onchange="renderTable()" class="bg-[#0b192c] border border-blue-500/30 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-yellow-400 w-full md:w-48 text-blue-100">
+        <div class="bg-[#091322] border border-blue-900/50 p-4 rounded-xl mb-6 flex flex-col md:flex-row justify-between gap-4">
+            <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Search by vessel, system, or description..." class="bg-[#050b14] border border-blue-900/60 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-yellow-400 w-full md:w-80 text-blue-100 placeholder-blue-500/50">
+            <select id="statusFilter" onchange="renderTable()" class="bg-[#050b14] border border-blue-900/60 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-yellow-400 w-full md:w-48 text-blue-100">
                 <option value="">All Statuses</option>
                 <option value="Completed">Completed</option>
                 <option value="Pending">Pending</option>
@@ -56,11 +56,11 @@
         </div>
 
         <!-- Table Log Section -->
-        <div class="bg-[#1e3e62] border border-blue-500/30 rounded-xl shadow-md overflow-hidden">
+        <div class="bg-[#091322] border border-blue-900/50 rounded-xl shadow-md overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-[#163556] text-yellow-400 text-xs uppercase tracking-wider border-b border-blue-500/30">
+                        <tr class="bg-[#070e1b] text-yellow-400 text-xs uppercase tracking-wider border-b border-blue-900/60">
                             <th class="p-4">Date</th>
                             <th class="p-4">Vessel / Boat</th>
                             <th class="p-4">System / Component</th>
@@ -70,35 +70,35 @@
                             <th class="p-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="logTableBody" class="divide-y divide-blue-900/50 text-sm">
+                    <tbody id="logTableBody" class="divide-y divide-blue-950/60 text-sm">
                         <!-- Dynamically Injected Rows -->
                     </tbody>
                 </table>
             </div>
             <div id="emptyState" class="text-center py-12 hidden">
-                <i class="fa-solid fa-ship text-blue-400/40 text-4xl mb-3"></i>
-                <p class="text-blue-200">No maintenance logs found. Click "Add Maintenance Record" to start tracking.</p>
+                <i class="fa-solid fa-ship text-blue-600/40 text-4xl mb-3"></i>
+                <p class="text-blue-400">No maintenance logs found. Click "Add Maintenance Record" to start tracking.</p>
             </div>
         </div>
     </main>
 
     <!-- Modal Form for Adding/Editing -->
-    <div id="recordModal" class="fixed inset-0 bg-[#0b192c]/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-[#1e3e62] border border-blue-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+    <div id="recordModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-[#091322] border border-blue-900/60 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="modalTitle" class="text-lg font-bold text-yellow-400">New Maintenance Record</h2>
-                <button onclick="closeModal()" class="text-blue-300 hover:text-yellow-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="closeModal()" class="text-blue-400 hover:text-yellow-400"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <form id="maintenanceForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
                 <input type="hidden" id="recordId">
                 <div>
-                    <label class="block text-xs uppercase text-blue-200 font-semibold mb-1">Vessel / Boat Name</label>
-                    <input type="text" id="vesselName" required placeholder="e.g., Sea Wolf, Hull #4" class="w-full bg-[#0b192c] border border-blue-500/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-300/50">
+                    <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Vessel / Boat Name</label>
+                    <input type="text" id="vesselName" required placeholder="e.g., Sea Wolf, Hull #4" class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-500/50">
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs uppercase text-blue-200 font-semibold mb-1">System / Category</label>
-                        <select id="category" required class="w-full bg-[#0b192c] border border-blue-500/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100">
+                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">System / Category</label>
+                        <select id="category" required class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100">
                             <option value="Engine">Engine / Propulsion</option>
                             <option value="Electrical">Electrical System</option>
                             <option value="Hull & Deck">Hull & Deck</option>
@@ -108,31 +108,31 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs uppercase text-blue-200 font-semibold mb-1">Date</label>
-                        <input type="date" id="logDate" required class="w-full bg-[#0b192c] border border-blue-500/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100">
+                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Date</label>
+                        <input type="date" id="logDate" required class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs uppercase text-blue-200 font-semibold mb-1">Maintenance Description</label>
-                    <textarea id="description" rows="3" required placeholder="Details about service performed, parts replaced..." class="w-full bg-[#0b192c] border border-blue-500/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-300/50"></textarea>
+                    <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Maintenance Description</label>
+                    <textarea id="description" rows="3" required placeholder="Details about service performed, parts replaced..." class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-500/50"></textarea>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs uppercase text-blue-200 font-semibold mb-1">Cost ($)</label>
-                        <input type="number" step="0.01" id="cost" required placeholder="0.00" class="w-full bg-[#0b192c] border border-blue-500/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-300/50">
+                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Cost ($)</label>
+                        <input type="number" step="0.01" id="cost" required placeholder="0.00" class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100 placeholder-blue-500/50">
                     </div>
                     <div>
-                        <label class="block text-xs uppercase text-blue-200 font-semibold mb-1">Status</label>
-                        <select id="status" required class="w-full bg-[#0b192c] border border-blue-500/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100">
+                        <label class="block text-xs uppercase text-blue-400 font-semibold mb-1">Status</label>
+                        <select id="status" required class="w-full bg-[#050b14] border border-blue-900/60 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-yellow-400 text-blue-100">
                             <option value="Completed">Completed</option>
                             <option value="Pending">Pending</option>
                             <option value="In Progress">In Progress</option>
                         </select>
                     </div>
                 </div>
-                <div class="flex justify-end space-x-3 pt-4 border-t border-blue-500/30">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg text-sm bg-blue-900/50 hover:bg-blue-900 text-blue-200 transition">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg text-sm bg-yellow-400 hover:bg-yellow-300 font-bold text-[#0b192c] transition shadow-lg shadow-yellow-400/20">Save Record</button>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-blue-900/60">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg text-sm bg-blue-950 hover:bg-blue-900 text-blue-300 transition">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-sm bg-yellow-400 hover:bg-yellow-300 font-bold text-[#050b14] transition shadow-lg shadow-yellow-400/10">Save Record</button>
                 </div>
             </form>
         </div>
@@ -242,23 +242,23 @@
             }
 
             filteredLogs.forEach(log => {
-                let badgeColor = 'bg-blue-900/50 text-blue-200 border border-blue-500/30';
-                if (log.status === 'Completed') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
-                if (log.status === 'Pending') badgeColor = 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30';
-                if (log.status === 'In Progress') badgeColor = 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30';
+                let badgeColor = 'bg-blue-950 text-blue-300 border border-blue-900';
+                if (log.status === 'Completed') badgeColor = 'bg-emerald-950/60 text-emerald-400 border border-emerald-800/60';
+                if (log.status === 'Pending') badgeColor = 'bg-yellow-950/60 text-yellow-400 border border-yellow-800/60';
+                if (log.status === 'In Progress') badgeColor = 'bg-cyan-950/60 text-cyan-400 border border-cyan-800/60';
 
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-blue-900/20 transition border-b border-blue-900/40";
+                tr.className = "hover:bg-blue-950/30 transition border-b border-blue-950/60";
                 tr.innerHTML = `
-                    <td class="p-4 whitespace-nowrap text-blue-200">${log.date}</td>
+                    <td class="p-4 whitespace-nowrap text-blue-300">${log.date}</td>
                     <td class="p-4 whitespace-nowrap font-medium text-white">${log.vessel}</td>
-                    <td class="p-4 whitespace-nowrap text-blue-200"><span class="bg-[#163556] border border-blue-500/30 px-2.5 py-1 rounded-md text-xs text-yellow-400">${log.category}</span></td>
-                    <td class="p-4 text-blue-100 max-w-xs truncate">${log.description}</td>
+                    <td class="p-4 whitespace-nowrap text-blue-300"><span class="bg-[#050b14] border border-blue-900 px-2.5 py-1 rounded-md text-xs text-yellow-400">${log.category}</span></td>
+                    <td class="p-4 text-blue-200 max-w-xs truncate">${log.description}</td>
                     <td class="p-4 whitespace-nowrap font-medium text-yellow-400">$${log.cost.toFixed(2)}</td>
                     <td class="p-4 whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${badgeColor}">${log.status}</span></td>
                     <td class="p-4 whitespace-nowrap text-right space-x-2">
-                        <button onclick="openModal(${log.id})" class="text-blue-300 hover:text-yellow-400 transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deleteRecord(${log.id})" class="text-blue-300 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="openModal(${log.id})" class="text-blue-400 hover:text-yellow-400 transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteRecord(${log.id})" class="text-blue-400 hover:text-rose-400 transition"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
