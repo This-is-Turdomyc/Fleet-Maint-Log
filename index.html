@@ -1,804 +1,835 @@
-<!DOCTYPE html> 
-<html lang="en"> 
-<head> 
-<meta charset="UTF-8"> 
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-<title>Vessel Maintenance & Technical Logbook</title> 
-<!-- Chart.js --> 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
-<!-- Firebase v8 --> 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script> 
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script> 
-<style> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vessel Maintenance & Technical Logbook</title>
+
+<!-- PWA / Mobile Meta Tags for iOS & Android -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vessel Logbook">
+<meta name="theme-color" content="#0f172a">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Firebase v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
 :root {
-    --bg-dark: #0f172a; 
-    --card-bg: #1e293b; 
-    --border-color: #334155; 
-    --accent-blue: #38bdf8; 
-    --accent-hover: #0284c7; 
-    --text-main: #f8fafc; 
-    --text-muted: #94a3b8; 
-    --success: #22c55e; 
-    --warning: #f59e0b; 
-    --danger: #ef4444; 
-    --info: #a855f7; 
-} 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; } 
-body { background-color: var(--bg-dark); color: var(--text-main); padding: 20px; line-height: 1.5; } 
-.container { max-width: 1200px; margin: 0 auto; } 
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; flex-wrap: wrap; gap: 12px; } 
-h1 { font-size: 1.75rem; color: var(--accent-blue); display: flex; align-items: center; gap: 10px; } 
-.form-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 24px; } 
-.form-card h2 { font-size: 1.2rem; margin-bottom: 16px; color: var(--accent-blue); } 
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; } 
-.form-group { display: flex; flex-direction: column; gap: 6px; } 
-.form-group.full-width { grid-column: 1 / -1; } 
-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; } 
-input, select, textarea { background-color: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: var(--text-main); font-size: 0.95rem; outline: none; width: 100%; transition: border-color 0.2s; } 
-input:focus, select:focus, textarea:focus { border-color: var(--accent-blue); } 
-textarea { resize: vertical; min-height: 70px; } 
-.checkbox-group { display: flex; align-items: center; gap: 10px; background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); height: 100%; } 
-.checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-blue); cursor: pointer; } 
-.checkbox-group label { cursor: pointer; text-transform: none; font-size: 0.9rem; color: var(--text-main); } 
-.parts-builder-container { background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 10px; } 
-.part-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: center; } 
-@media (max-width: 768px) { .part-row { grid-template-columns: 1fr; background: var(--card-bg); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); } } 
-.btn { background-color: var(--accent-blue); color: #0f172a; font-weight: 700; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 16px; transition: background-color 0.2s; } 
-.btn:hover { background-color: var(--accent-hover); } 
-.btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main); } 
-.btn-secondary:hover { background-color: var(--border-color); } 
-.btn-small { padding: 6px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 4px; cursor: pointer; border: none; } 
-.filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; } 
-.logs-container { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; } 
-.log-card { background: var(--card-bg); border: 1px solid var(--border-color); border-left: 5px solid var(--accent-blue); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; } 
-.log-card.unseaworthy { border-left-color: var(--danger); } 
-.log-card.parts-pending { border-left-color: var(--warning); } 
-.log-card.wip-status { border-left-color: var(--info); } 
-.log-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; gap: 8px; } 
-.log-title { font-size: 1.1rem; font-weight: 700; color: var(--accent-blue); } 
-.log-date { font-size: 0.85rem; color: var(--text-muted); } 
-.badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-block; } 
-.badge-success { background: rgba(34, 197, 94, 0.2); color: var(--success); } 
-.badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); } 
-.badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); } 
-.badge-info { background: rgba(168, 85, 247, 0.2); color: var(--info); } 
-.log-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.9rem; } 
-.log-detail-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; } 
-.parts-list-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 0.85rem; } 
-.parts-list-table th, .parts-list-table td { border: 1px solid var(--border-color); padding: 6px 10px; text-align: left; } 
-.parts-list-table th { background: #0f172a; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; } 
-.log-media img, .log-media video { max-width: 150px; max-height: 150px; border-radius: 6px; border: 1px solid var(--border-color); object-fit: cover; } 
-.log-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap; } 
-.btn-edit { background: var(--accent-blue); color: #0f172a; } 
-.btn-delete { background: var(--danger); color: #fff; } 
-.btn-complete-recurring { background: var(--success); color: #0f172a; } 
-.header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; } 
-.header-actions button { padding: 8px 12px; font-size: 0.85rem; cursor: pointer; border-radius: 6px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); } 
-.header-actions button:hover { background: var(--border-color); } 
-.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 24px; } 
-.stat-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; } 
-.stat-card h3 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; } 
-.stat-card .value { font-size: 2.0rem; font-weight: 700; margin-top: 8px; } 
-.chart-container { position: relative; height: 180px; width: 100%; margin-top: 10px; } 
-</style> 
-</head> 
-<body> 
-<div class="container"> 
-    <header> 
-        <h1>⚓ Vessel Maintenance Logbook</h1> 
-        <div class="header-actions"> 
-            <button id="notif-btn" onclick="requestNotificationPermission()" style="background: rgba(56, 189, 248, 0.15); border-color: var(--accent-blue); color: var(--accent-blue); font-weight: 600;">🔔 Enable Notifications</button> 
-            <button onclick="exportJSON()">📥 Export Data</button> 
-            <button onclick="document.getElementById('import-file').click()">📤 Import Data</button> 
-            <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importJSON(event)"> 
-        </div> 
-    </header> 
+    --bg-dark: #0f172a;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --accent-blue: #38bdf8;
+    --accent-hover: #0284c7;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #a855f7;
+}
 
-    <!-- Form Section --> 
-    <div class="form-card"> 
-        <h2 id="form-title">📝 New Log Entry</h2> 
-        <form id="log-form" onsubmit="handleFormSubmit(event)"> 
-            <input type="hidden" id="log-id"> 
-            <div class="form-grid"> 
-                <div class="form-group"> 
-                    <label for="vessel-name">Vessel Name</label> 
-                    <input type="text" id="vessel-name" required list="vessel-list"> 
-                </div> 
-                <div class="form-group"> 
-                    <label for="equipment">Equipment / Component</label> 
-                    <input type="text" id="equipment" required list="equipment-list"> 
-                </div> 
-                <div class="form-group"> 
-                    <label for="category">Marine System / Category</label> 
-                    <select id="category" required> 
-                        <option value="Propulsion / Main Engines">Propulsion / Main Engines</option> 
-                        <option value="Generators / Electrical">Generators / Electrical</option> 
-                        <option value="Hydraulics / Steering">Hydraulics / Steering</option> 
-                        <option value="Bilge / Fire / Piping">Bilge / Fire / Piping</option> 
-                        <option value="HVAC / Refrigeration">HVAC / Refrigeration</option> 
-                        <option value="Navigation / Electronics">Navigation / Electronics</option> 
-                        <option value="Deck Machinery / Rigging">Deck Machinery / Rigging</option> 
-                        <option value="Hull / Structural">Hull / Structural</option> 
-                        <option value="Safety Equipment">Safety Equipment</option> 
-                        <option value="General Routine Service">General Routine Service</option> 
-                    </select> 
-                </div> 
-                <div class="form-group"> 
-                    <label for="log-date">Log Date</label> 
-                    <input type="date" id="log-date" required onchange="calculateNextServiceDate()"> 
-                </div> 
-                <div class="form-group"> 
-                    <label for="vessel-status">Vessel Operational Status</label> 
-                    <select id="vessel-status" required onchange="handleVesselStatusChange()"> 
-                        <option value="Operational (Ready for Sea)">Operational (Ready for Sea)</option> 
-                        <option value="Operational - Minor Defect (Parts Pending)">Operational - Minor Defect (Parts Pending)</option> 
-                        <option value="Work in Progress (WIP)">Work in Progress (WIP)</option> 
-                        <option value="Out of Service (Unseaworthy)">Out of Service (Unseaworthy)</option> 
-                    </select> 
-                </div> 
-                <div class="form-group"> 
-                    <label for="tech-name">Technician Name</label> 
-                    <input type="text" id="tech-name" required list="tech-list"> 
-                </div> 
-                <div class="form-group"> 
-                    <label for="engine-hours">Engine / Generator Hours</label> 
-                    <input type="text" id="engine-hours" list="hours-list"> 
-                </div> 
-                <div class="form-group"> 
-                    <div id="rts-container" class="checkbox-group" style="margin-top: 20px;"> 
-                        <input type="checkbox" id="signoff" checked onchange="handleSignoffChange()"> 
-                        <label for="signoff"><strong id="signoff-label-text">Approved for Service / Sea</strong></label> 
-                    </div> 
-                </div> 
-                <div class="form-group full-width"> 
-                    <label for="defect">Defect / Issue Observed</label> 
-                    <textarea id="defect" list="defect-list"></textarea> 
-                </div> 
-                <div class="form-group full-width"> 
-                    <label for="work-done">Work Accomplished / Maintenance Action Taken</label> 
-                    <textarea id="work-done" required list="workdone-list"></textarea> 
-                </div> 
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background-color: var(--bg-dark); color: var(--text-main); padding: 12px; line-height: 1.5; }
+@media (min-width: 768px) { body { padding: 20px; } }
 
-                <!-- Parts Builder Section --> 
-                <div class="form-group full-width"> 
-                    <label>Parts Installed / Needed (Optional)</label> 
-                    <div class="parts-builder-container"> 
-                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;"> 
-                            <span>Part Name / Desc</span> 
-                            <span>P/N or SKU</span> 
-                            <span>Qty / Unit</span> 
-                            <span>Unit Cost ($)</span> 
-                            <span></span> 
-                        </div> 
-                        <div id="parts-rows-wrapper" style="display: flex; flex-direction: column; gap: 8px;"></div> 
-                        <button type="button" class="btn-small btn-secondary" onclick="addPartRow()" style="align-self: flex-start; margin-top: 4px;">➕ Add Part / Item</button> 
-                    </div> 
-                </div> 
+.container { max-width: 1200px; margin: 0 auto; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+h1 { font-size: 1.5rem; color: var(--accent-blue); display: flex; align-items: center; gap: 10px; }
+@media (min-width: 768px) { h1 { font-size: 1.75rem; } }
 
-                <div class="form-group"> 
-                    <label for="labor-hours">Labor Hours</label> 
-                    <input type="number" step="0.5" id="labor-hours"> 
-                </div> 
-                <div class="form-group"> 
-                    <label for="media-files">Attach Photos or Videos</label> 
-                    <input type="file" id="media-files" accept="image/*,video/*" multiple onchange="handleFileSelect(event)"> 
-                    <input type="hidden" id="media-list-json"> 
-                </div> 
+.form-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+@media (min-width: 768px) { .form-card { padding: 20px; } }
+.form-card h2 { font-size: 1.2rem; margin-bottom: 16px; color: var(--accent-blue); }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full-width { grid-column: 1 / -1; }
+
+label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+input, select, textarea { background-color: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: var(--text-main); font-size: 16px; outline: none; width: 100%; transition: border-color 0.2s; } 
+@media (min-width: 768px) { input, select, textarea { padding: 10px; font-size: 0.95rem; } }
+
+input:focus, select:focus, textarea:focus { border-color: var(--accent-blue); }
+textarea { resize: vertical; min-height: 80px; }
+
+.checkbox-group { display: flex; align-items: center; gap: 10px; background: #0f172a; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); height: 100%; }
+.checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent-blue); cursor: pointer; }
+.checkbox-group label { cursor: pointer; text-transform: none; font-size: 0.9rem; color: var(--text-main); }
+
+.parts-builder-container { background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+.part-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items: center; }
+@media (max-width: 768px) { 
+    .part-row { grid-template-columns: 1fr; background: var(--card-bg); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); } 
+}
+
+.btn { background-color: var(--accent-blue); color: #0f172a; font-weight: 700; padding: 14px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 16px; transition: background-color 0.2s; font-size: 1rem; }
+.btn:hover { background-color: var(--accent-hover); }
+.btn-secondary { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+.btn-secondary:hover { background-color: var(--border-color); }
+.btn-small { padding: 8px 12px; font-size: 0.85rem; font-weight: 600; border-radius: 4px; cursor: pointer; border: none; }
+
+.filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.logs-container { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+.log-card { background: var(--card-bg); border: 1px solid var(--border-color); border-left: 5px solid var(--accent-blue); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.log-card.unseaworthy { border-left-color: var(--danger); }
+.log-card.parts-pending { border-left-color: var(--warning); }
+.log-card.wip-status { border-left-color: var(--info); }
+
+.log-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+.log-title { font-size: 1.1rem; font-weight: 700; color: var(--accent-blue); }
+.log-date { font-size: 0.85rem; color: var(--text-muted); }
+.badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
+.badge-success { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+.badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+.badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+.badge-info { background: rgba(168, 85, 247, 0.2); color: var(--info); }
+
+.log-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; font-size: 0.9rem; }
+.log-detail-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+
+.parts-list-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 0.85rem; overflow-x: auto; display: block; }
+.parts-list-table th, .parts-list-table td { border: 1px solid var(--border-color); padding: 8px 10px; text-align: left; white-space: nowrap; }
+.parts-list-table th { background: #0f172a; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+
+.log-media img, .log-media video { max-width: 120px; max-height: 120px; border-radius: 6px; border: 1px solid var(--border-color); object-fit: cover; }
+.log-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap; }
+.btn-edit { background: var(--accent-blue); color: #0f172a; }
+.btn-delete { background: var(--danger); color: #fff; }
+.btn-complete-recurring { background: var(--success); color: #0f172a; }
+
+.header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.header-actions button { padding: 10px 14px; font-size: 0.85rem; cursor: pointer; border-radius: 6px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); }
+.header-actions button:hover { background: var(--border-color); }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 24px; }
+.stat-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+.stat-card h3 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; }
+.stat-card .value { font-size: 1.8rem; font-weight: 700; margin-top: 8px; }
+.chart-container { position: relative; height: 220px; width: 100%; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>⚓ Vessel Maintenance Logbook</h1>
+        <div class="header-actions">
+            <button id="notif-btn" onclick="requestNotificationPermission()" style="background: rgba(56, 189, 248, 0.15); border-color: var(--accent-blue); color: var(--accent-blue); font-weight: 600;">🔔 Notifications</button>
+            <button onclick="exportJSON()">📥 Export</button>
+            <button onclick="document.getElementById('import-file').click()">📤 Import</button>
+            <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importJSON(event)">
+        </div>
+    </header>
+
+    <!-- Form Section -->
+    <div class="form-card">
+        <h2 id="form-title">📝 New Log Entry</h2>
+        <form id="log-form" onsubmit="handleFormSubmit(event)">
+            <input type="hidden" id="log-id">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="vessel-name">Vessel Name</label>
+                    <input type="text" id="vessel-name" required list="vessel-list">
+                </div>
+                <div class="form-group">
+                    <label for="equipment">Equipment / Component</label>
+                    <input type="text" id="equipment" required list="equipment-list">
+                </div>
+                <div class="form-group">
+                    <label for="category">Marine System / Category</label>
+                    <select id="category" required>
+                        <option value="Propulsion / Main Engines">Propulsion / Main Engines</option>
+                        <option value="Generators / Electrical">Generators / Electrical</option>
+                        <option value="Hydraulics / Steering">Hydraulics / Steering</option>
+                        <option value="Bilge / Fire / Piping">Bilge / Fire / Piping</option>
+                        <option value="HVAC / Refrigeration">HVAC / Refrigeration</option>
+                        <option value="Navigation / Electronics">Navigation / Electronics</option>
+                        <option value="Deck Machinery / Rigging">Deck Machinery / Rigging</option>
+                        <option value="Hull / Structural">Hull / Structural</option>
+                        <option value="Safety Equipment">Safety Equipment</option>
+                        <option value="General Routine Service">General Routine Service</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="log-date">Log Date</label>
+                    <input type="date" id="log-date" required onchange="calculateNextServiceDate()">
+                </div>
+                <div class="form-group">
+                    <label for="vessel-status">Vessel Operational Status</label>
+                    <select id="vessel-status" required onchange="handleVesselStatusChange()">
+                        <option value="Operational (Ready for Sea)">Operational (Ready for Sea)</option>
+                        <option value="Operational - Minor Defect (Parts Pending)">Operational - Minor Defect (Parts Pending)</option>
+                        <option value="Work in Progress (WIP)">Work in Progress (WIP)</option>
+                        <option value="Out of Service (Unseaworthy)">Out of Service (Unseaworthy)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tech-name">Technician Name</label>
+                    <input type="text" id="tech-name" required list="tech-list">
+                </div>
+                <div class="form-group">
+                    <label for="engine-hours">Engine / Generator Hours</label>
+                    <input type="text" id="engine-hours" list="hours-list">
+                </div>
+                <div class="form-group">
+                    <div id="rts-container" class="checkbox-group" style="margin-top: 20px;">
+                        <input type="checkbox" id="signoff" checked onchange="handleSignoffChange()">
+                        <label for="signoff"><strong id="signoff-label-text">Approved for Service / Sea</strong></label>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="defect">Defect / Issue Observed</label>
+                    <textarea id="defect" list="defect-list"></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label for="work-done">Work Accomplished / Maintenance Action Taken</label>
+                    <textarea id="work-done" required list="workdone-list"></textarea>
+                </div>
+
+                <!-- Parts Builder Section -->
+                <div class="form-group full-width">
+                    <label>Parts Installed / Needed (Optional)</label>
+                    <div class="parts-builder-container">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
+                            <span>Part Name / Desc</span>
+                            <span>P/N or SKU</span>
+                            <span>Qty / Unit</span>
+                            <span>Unit Cost ($)</span>
+                            <span></span>
+                        </div>
+                        <div id="parts-rows-wrapper" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                        <button type="button" class="btn-small btn-secondary" onclick="addPartRow()" style="align-self: flex-start; margin-top: 4px;">➕ Add Part / Item</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="labor-hours">Labor Hours</label>
+                    <input type="number" step="0.5" id="labor-hours">
+                </div>
+                <div class="form-group">
+                    <label for="media-files">Attach Photos or Videos</label>
+                    <!-- Enhanced for iOS/Android to allow camera roll or live capture -->
+                    <input type="file" id="media-files" accept="image/*,video/*" multiple onchange="handleFileSelect(event)">
+                    <input type="hidden" id="media-list-json">
+                </div>
                 <div class="form-group full-width" id="media-preview-container" style="display: none;">
                     <label>Attached Media Previews</label>
                     <div id="media-thumbnails-grid" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;"></div>
-                </div> 
-                <div class="form-group full-width"> 
-                    <div class="checkbox-group"> 
-                        <input type="checkbox" id="next-service-toggle" onchange="toggleNextServiceFields()"> 
-                        <label for="next-service-toggle"><strong>Schedule Recurring Maintenance / Next Service Task</strong></label> 
-                    </div> 
-                </div> 
-                <div class="form-group" id="next-service-freq-group" style="display: none;"> 
-                    <label for="next-service-freq">Recurring Frequency</label> 
-                    <select id="next-service-freq" onchange="calculateNextServiceDate()"> 
-                        <option value="weekly">Weekly</option> 
-                        <option value="monthly">Monthly</option> 
-                        <option value="yearly">Yearly</option> 
-                        <option value="custom">Custom Date</option> 
-                    </select> 
-                </div> 
-                <div class="form-group" id="next-service-date-group" style="display: none;"> 
-                    <label for="next-service-date">Next Service Due Date</label> 
-                    <input type="date" id="next-service-date"> 
-                </div> 
-                <div class="form-group" id="next-service-hours-group" style="display: none;"> 
-                    <label for="next-service-hours">Next Service Due Hours</label> 
-                    <input type="text" id="next-service-hours"> 
-                </div> 
-            </div> 
-            <button type="submit" class="btn" id="submit-btn">SAVE LOG ENTRY</button> 
-            <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none; margin-top: 8px;" onclick="resetForm()">CANCEL EDIT</button> 
-        </form> 
-    </div> 
+                </div>
+                <div class="form-group full-width">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="next-service-toggle" onchange="toggleNextServiceFields()">
+                        <label for="next-service-toggle"><strong>Schedule Recurring Maintenance / Next Service Task</strong></label>
+                    </div>
+                </div>
+                <div class="form-group" id="next-service-freq-group" style="display: none;">
+                    <label for="next-service-freq">Recurring Frequency</label>
+                    <select id="next-service-freq" onchange="calculateNextServiceDate()">
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                        <option value="custom">Custom Date</option>
+                    </select>
+                </div>
+                <div class="form-group" id="next-service-date-group" style="display: none;">
+                    <label for="next-service-date">Next Service Due Date</label>
+                    <input type="date" id="next-service-date">
+                </div>
+                <div class="form-group" id="next-service-hours-group" style="display: none;">
+                    <label for="next-service-hours">Next Service Due Hours</label>
+                    <input type="text" id="next-service-hours">
+                </div>
+            </div>
+            <button type="submit" class="btn" id="submit-btn">SAVE LOG ENTRY</button>
+            <button type="button" class="btn btn-secondary" id="cancel-btn" style="display: none; margin-top: 8px;" onclick="resetForm()">CANCEL EDIT</button>
+        </form>
+    </div>
 
-    <!-- Global Datalists for Autocomplete --> 
-    <datalist id="vessel-list"></datalist> 
-    <datalist id="equipment-list"></datalist> 
-    <datalist id="tech-list"></datalist> 
-    <datalist id="hours-list"></datalist> 
-    <datalist id="defect-list"></datalist> 
-    <datalist id="workdone-list"></datalist> 
-    <datalist id="partname-list"></datalist> 
-    <datalist id="partno-list"></datalist> 
-    <datalist id="partqty-list"></datalist> 
-    <datalist id="partcost-list"></datalist> 
+    <!-- Global Datalists for Autocomplete -->
+    <datalist id="vessel-list"></datalist>
+    <datalist id="equipment-list"></datalist>
+    <datalist id="tech-list"></datalist>
+    <datalist id="hours-list"></datalist>
+    <datalist id="defect-list"></datalist>
+    <datalist id="workdone-list"></datalist>
+    <datalist id="partname-list"></datalist>
+    <datalist id="partno-list"></datalist>
+    <datalist id="partqty-list"></datalist>
+    <datalist id="partcost-list"></datalist>
 
-    <!-- Filter & Sort Bar --> 
-    <div class="filter-bar"> 
-        <select id="filter-vessel" onchange="renderLogs()"> 
-            <option value="ALL">All Vessels</option> 
-        </select> 
-        <select id="filter-category" onchange="renderLogs()"> 
-            <option value="ALL">All Categories</option> 
-            <option value="Propulsion / Main Engines">Propulsion / Main Engines</option> 
-            <option value="Generators / Electrical">Generators / Electrical</option> 
-            <option value="Hydraulics / Steering">Hydraulics / Steering</option> 
-            <option value="Bilge / Fire / Piping">Bilge / Fire / Piping</option> 
-            <option value="HVAC / Refrigeration">HVAC / Refrigeration</option> 
-            <option value="Navigation / Electronics">Navigation / Electronics</option> 
-            <option value="Deck Machinery / Rigging">Deck Machinery / Rigging</option> 
-            <option value="Hull / Structural">Hull / Structural</option> 
-            <option value="Safety Equipment">Safety Equipment</option> 
-            <option value="General Routine Service">General Routine Service</option> 
-        </select> 
-        <select id="filter-status" onchange="renderLogs()"> 
-            <option value="ALL">All Work Statuses</option> 
-            <option value="COMPLETED">Completed Work Only</option> 
-            <option value="WIP">Work in Progress (Pending / OOS / WIP)</option> 
-        </select> 
-        <select id="filter-recurring" onchange="renderLogs()"> 
-            <option value="ALL">All Maintenance Tasks</option> 
-            <option value="RECURRING">Recurring Maintenance Only</option> 
-            <option value="NON-RECURRING">Standard Maintenance Only</option> 
-        </select> 
-        <select id="sort-order" onchange="renderLogs()"> 
-            <option value="NEWEST">Sort: Newest First</option> 
-            <option value="OLDEST">Sort: Oldest First</option> 
-            <option value="COST_HIGH">Sort: Highest Cost</option> 
-            <option value="VESSEL">Sort: Vessel Name</option> 
-        </select> 
-        <input type="text" id="search-input" placeholder="Search text..." oninput="renderLogs()"> 
-    </div> 
+    <!-- Filter & Sort Bar -->
+    <div class="filter-bar">
+        <select id="filter-vessel" onchange="renderLogs()">
+            <option value="ALL">All Vessels</option>
+        </select>
+        <select id="filter-category" onchange="renderLogs()">
+            <option value="ALL">All Categories</option>
+            <option value="Propulsion / Main Engines">Propulsion / Main Engines</option>
+            <option value="Generators / Electrical">Generators / Electrical</option>
+            <option value="Hydraulics / Steering">Hydraulics / Steering</option>
+            <option value="Bilge / Fire / Piping">Bilge / Fire / Piping</option>
+            <option value="HVAC / Refrigeration">HVAC / Refrigeration</option>
+            <option value="Navigation / Electronics">Navigation / Electronics</option>
+            <option value="Deck Machinery / Rigging">Deck Machinery / Rigging</option>
+            <option value="Hull / Structural">Hull / Structural</option>
+            <option value="Safety Equipment">Safety Equipment</option>
+            <option value="General Routine Service">General Routine Service</option>
+        </select>
+        <select id="filter-status" onchange="renderLogs()">
+            <option value="ALL">All Work Statuses</option>
+            <option value="COMPLETED">Completed Work Only</option>
+            <option value="WIP">Work in Progress (Pending / OOS / WIP)</option>
+        </select>
+        <select id="filter-recurring" onchange="renderLogs()">
+            <option value="ALL">All Maintenance Tasks</option>
+            <option value="RECURRING">Recurring Maintenance Only</option>
+            <option value="NON-RECURRING">Standard Maintenance Only</option>
+        </select>
+        <select id="sort-order" onchange="renderLogs()">
+            <option value="NEWEST">Sort: Newest First</option>
+            <option value="OLDEST">Sort: Oldest First</option>
+            <option value="COST_HIGH">Sort: Highest Cost</option>
+            <option value="VESSEL">Sort: Vessel Name</option>
+        </select>
+        <input type="text" id="search-input" placeholder="Search text..." oninput="renderLogs()">
+    </div>
 
-    <!-- Log List --> 
-    <div class="logs-container" id="logs-container"></div> 
+    <!-- Log List -->
+    <div class="logs-container" id="logs-container"></div>
 
-    <!-- Dashboard & Charts --> 
-    <div class="dashboard-grid"> 
-        <div class="stat-card"> 
-            <h3>Total Log Entries</h3> 
-            <div class="value" id="kpi-total-logs">0</div> 
-        </div> 
-        <div class="stat-card"> 
-            <h3>Unseaworthy / OOS Vessels</h3> 
-            <div class="value" id="kpi-oos-vessels" style="color: var(--danger);">0</div> 
-        </div> 
-        <div class="stat-card"> 
-            <h3>Parts Pending</h3> 
-            <div class="value" id="kpi-parts-pending" style="color: var(--warning);">0</div> 
-        </div> 
-        <div class="stat-card"> 
-            <h3>Total Maintenance Spend</h3> 
-            <div class="value" id="kpi-total-spend" style="color: var(--success);">$0.00</div> 
-        </div> 
-        <div class="stat-card full-width"> 
-            <h3>Maintenance Categories Breakdown</h3> 
-            <div class="chart-container"> 
-                <canvas id="categoryChart"></canvas> 
-            </div> 
-        </div> 
-    </div> 
-</div> 
+    <!-- Dashboard & Charts -->
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <h3>Total Log Entries</h3>
+            <div class="value" id="kpi-total-logs">0</div>
+        </div>
+        <div class="stat-card">
+            <h3>Unseaworthy / OOS Vessels</h3>
+            <div class="value" id="kpi-oos-vessels" style="color: var(--danger);">0</div>
+        </div>
+        <div class="stat-card">
+            <h3>Parts Pending</h3>
+            <div class="value" id="kpi-parts-pending" style="color: var(--warning);">0</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Maintenance Spend</h3>
+            <div class="value" id="kpi-total-spend" style="color: var(--success);">$0.00</div>
+        </div>
+        <div class="stat-card full-width">
+            <h3>Maintenance Categories Breakdown</h3>
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
-<script> 
-const firebaseConfig = { 
-    databaseURL: "https://fleet-maint-log-default-rtdb.asia-southeast1.firebasedatabase.app" 
-}; 
-if (!firebase.apps.length) { 
-    firebase.initializeApp(firebaseConfig); 
-} 
-const dbRef = firebase.database().ref('logs'); 
-let logs = []; 
-let myChart = null; 
-let currentMediaList = []; 
+<script>
+const firebaseConfig = {
+    databaseURL: "https://fleet-maint-log-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const dbRef = firebase.database().ref('logs');
+let logs = [];
+let myChart = null;
+let currentMediaList = [];
 
-document.addEventListener('DOMContentLoaded', () => { 
-    document.getElementById('log-date').valueAsDate = new Date(); 
-    initChart(); 
-    initRealtimeSync(); 
-    checkNotificationButtonState(); 
-}); 
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('log-date').valueAsDate = new Date();
+    initChart();
+    initRealtimeSync();
+    checkNotificationButtonState();
+});
 
-function handleVesselStatusChange() { 
-    const statusVal = document.getElementById('vessel-status').value; 
-    const signoffCheckbox = document.getElementById('signoff'); 
-    signoffCheckbox.checked = (statusVal === 'Operational (Ready for Sea)' || statusVal === 'Operational - Minor Defect (Parts Pending)'); 
-    updateSignoffUI(); 
-} 
+function handleVesselStatusChange() {
+    const statusVal = document.getElementById('vessel-status').value;
+    const signoffCheckbox = document.getElementById('signoff');
+    signoffCheckbox.checked = (statusVal === 'Operational (Ready for Sea)' || statusVal === 'Operational - Minor Defect (Parts Pending)');
+    updateSignoffUI();
+}
 
-function handleSignoffChange() { 
-    const statusSelect = document.getElementById('vessel-status'); 
-    const signoffChecked = document.getElementById('signoff').checked; 
+function handleSignoffChange() {
+    const statusSelect = document.getElementById('vessel-status');
+    const signoffChecked = document.getElementById('signoff').checked;
 
-    if (!signoffChecked && ['Operational (Ready for Sea)', 'Operational - Minor Defect (Parts Pending)'].includes(statusSelect.value)) { 
-        statusSelect.value = 'Out of Service (Unseaworthy)'; 
-    } else if (signoffChecked && ['Out of Service (Unseaworthy)', 'Work in Progress (WIP)'].includes(statusSelect.value)) { 
-        statusSelect.value = 'Operational (Ready for Sea)'; 
-    } 
-    updateSignoffUI(); 
-} 
+    if (!signoffChecked && ['Operational (Ready for Sea)', 'Operational - Minor Defect (Parts Pending)'].includes(statusSelect.value)) {
+        statusSelect.value = 'Out of Service (Unseaworthy)';
+    } else if (signoffChecked && ['Out of Service (Unseaworthy)', 'Work in Progress (WIP)'].includes(statusSelect.value)) {
+        statusSelect.value = 'Operational (Ready for Sea)';
+    }
+    updateSignoffUI();
+}
 
-function updateSignoffUI() { 
-    const checked = document.getElementById('signoff').checked; 
-    const labelText = document.getElementById('signoff-label-text'); 
-    const container = document.getElementById('rts-container'); 
+function updateSignoffUI() {
+    const checked = document.getElementById('signoff').checked;
+    const labelText = document.getElementById('signoff-label-text');
+    const container = document.getElementById('rts-container');
 
-    labelText.innerText = checked ? "Approved for Service / Sea" : "Not Approved / Restricted"; 
-    container.style.borderColor = checked ? "var(--success)" : "var(--danger)"; 
-    container.style.background = checked ? "rgba(34, 197, 94, 0.05)" : "rgba(239, 68, 68, 0.05)"; 
-} 
+    labelText.innerText = checked ? "Approved for Service / Sea" : "Not Approved / Restricted";
+    container.style.borderColor = checked ? "var(--success)" : "var(--danger)";
+    container.style.background = checked ? "rgba(34, 197, 94, 0.05)" : "rgba(239, 68, 68, 0.05)";
+}
 
-function addPartRow(name = '', partNo = '', qty = '', cost = '') { 
-    const wrapper = document.getElementById('parts-rows-wrapper'); 
-    const rowId = 'part-' + Math.random().toString(36).substr(2, 6); 
-    const rowDiv = document.createElement('div'); 
-    rowDiv.className = 'part-row'; 
-    rowDiv.id = rowId; 
-    rowDiv.innerHTML = ` 
-        <input type="text" class="part-name" value="${name}" list="partname-list" required> 
-        <input type="text" class="part-number" value="${partNo}" list="partno-list"> 
-        <input type="text" class="part-qty" value="${qty}" list="partqty-list" required> 
-        <input type="text" class="part-cost" value="${cost}" list="partcost-list" required> 
-        <button type="button" class="btn-small" style="background: var(--danger); color: white;" onclick="document.getElementById('${rowId}').remove()">✕</button> 
-    `; 
-    wrapper.appendChild(rowDiv); 
-    updateGlobalDatalists(); 
-} 
+function addPartRow(name = '', partNo = '', qty = '', cost = '') {
+    const wrapper = document.getElementById('parts-rows-wrapper');
+    const rowId = 'part-' + Math.random().toString(36).substr(2, 6);
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'part-row';
+    rowDiv.id = rowId;
+    rowDiv.innerHTML = `
+        <input type="text" class="part-name" value="${name}" list="partname-list" required>
+        <input type="text" class="part-number" value="${partNo}" list="partno-list">
+        <input type="text" class="part-qty" value="${qty}" list="partqty-list" required>
+        <input type="text" class="part-cost" value="${cost}" list="partcost-list" required>
+        <button type="button" class="btn-small" style="background: var(--danger); color: white;" onclick="document.getElementById('${rowId}').remove()">✕</button>
+    `;
+    wrapper.appendChild(rowDiv);
+    updateGlobalDatalists();
+}
 
-function handleFileSelect(event) { 
-    const files = event.target.files; 
-    if (!files) return; 
+function handleFileSelect(event) {
+    const files = event.target.files;
+    if (!files) return;
 
-    Array.from(files).forEach(file => { 
-        const reader = new FileReader(); 
-        reader.onload = e => { 
-            currentMediaList.push({ base64: e.target.result, type: file.type, name: file.name }); 
-            updateMediaPreviews(); 
-        }; 
-        reader.readAsDataURL(file); 
-    }); 
-    event.target.value = ''; 
-} 
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            currentMediaList.push({ base64: e.target.result, type: file.type, name: file.name });
+            updateMediaPreviews();
+        };
+        reader.readAsDataURL(file);
+    });
+    event.target.value = '';
+}
 
-function removeMediaItem(index) { 
-    currentMediaList.splice(index, 1); 
-    updateMediaPreviews(); 
-} 
+function removeMediaItem(index) {
+    currentMediaList.splice(index, 1);
+    updateMediaPreviews();
+}
 
-function updateMediaPreviews() { 
-    const container = document.getElementById('media-preview-container'); 
-    const grid = document.getElementById('media-thumbnails-grid'); 
-    const hiddenInput = document.getElementById('media-list-json'); 
+function updateMediaPreviews() {
+    const container = document.getElementById('media-preview-container');
+    const grid = document.getElementById('media-thumbnails-grid');
+    const hiddenInput = document.getElementById('media-list-json');
 
-    if (currentMediaList.length === 0) { 
-        container.style.display = 'none'; 
-        grid.innerHTML = ''; 
-        hiddenInput.value = ''; 
-        return; 
-    } 
+    if (currentMediaList.length === 0) {
+        container.style.display = 'none';
+        grid.innerHTML = '';
+        hiddenInput.value = '';
+        return;
+    }
 
-    container.style.display = 'flex'; 
-    hiddenInput.value = JSON.stringify(currentMediaList); 
+    container.style.display = 'flex';
+    hiddenInput.value = JSON.stringify(currentMediaList);
 
-    grid.innerHTML = currentMediaList.map((media, index) => { 
-        const isVid = media.type?.startsWith('video'); 
-        const preview = isVid 
-            ? `<video src="${media.base64}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;"></video>` 
-            : `<img src="${media.base64}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" alt="preview">`; 
-        return ` 
-            <div style="position: relative; display: inline-block; border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; background: #0f172a;"> 
-                ${preview} 
-                <button type="button" onclick="removeMediaItem(${index})" style="position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; cursor: pointer;">✕</button> 
-            </div> 
-        `; 
-    }).join(''); 
-} 
+    grid.innerHTML = currentMediaList.map((media, index) => {
+        const isVid = media.type?.startsWith('video');
+        const preview = isVid
+            ? `<video src="${media.base64}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;"></video>`
+            : `<img src="${media.base64}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" alt="preview">`;
+        return `
+            <div style="position: relative; display: inline-block; border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; background: #0f172a;">
+                ${preview}
+                <button type="button" onclick="removeMediaItem(${index})" style="position: absolute; top: -6px; right: -6px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; cursor: pointer;">✕</button>
+            </div>
+        `;
+    }).join('');
+}
 
-function checkNotificationButtonState() { 
-    const btn = document.getElementById('notif-btn'); 
-    if (!("Notification" in window)) { 
-        btn.innerText = "Unsupported"; 
-        btn.disabled = true; 
-        return; 
-    } 
-    if (Notification.permission === "granted") { 
-        btn.innerText = "🔔 Enabled"; 
-        btn.style.borderColor = "var(--success)"; 
-        btn.style.color = "var(--success)"; 
-    } else if (Notification.permission === "denied") { 
-        btn.innerText = "🔕 Blocked"; 
-        btn.style.borderColor = "var(--danger)"; 
-        btn.style.color = "var(--danger)"; 
-    } 
-} 
+function checkNotificationButtonState() {
+    const btn = document.getElementById('notif-btn');
+    if (!("Notification" in window)) {
+        btn.innerText = "Unsupported";
+        btn.disabled = true;
+        return;
+    }
+    if (Notification.permission === "granted") {
+        btn.innerText = "🔔 Enabled";
+        btn.style.borderColor = "var(--success)";
+        btn.style.color = "var(--success)";
+    } else if (Notification.permission === "denied") {
+        btn.innerText = "🔕 Blocked";
+        btn.style.borderColor = "var(--danger)";
+        btn.style.color = "var(--danger)";
+    }
+}
 
-function requestNotificationPermission() { 
-    if (!("Notification" in window)) return; 
-    Notification.requestPermission().then(permission => { 
-        checkNotificationButtonState(); 
-        if (permission === "granted") { 
-            new Notification("Vessel Logbook", { body: "Notifications successfully enabled!" }); 
-        } 
-    }); 
-} 
+function requestNotificationPermission() {
+    if (!("Notification" in window)) return;
+    Notification.requestPermission().then(permission => {
+        checkNotificationButtonState();
+        if (permission === "granted") {
+            new Notification("Vessel Logbook", { body: "Notifications successfully enabled!" });
+        }
+    });
+}
 
-function initRealtimeSync() { 
-    dbRef.on('value', snapshot => { 
-        const data = snapshot.val(); 
-        logs = data ? Object.values(data) : []; 
-        renderLogs(); 
-    }); 
-} 
+function initRealtimeSync() {
+    dbRef.on('value', snapshot => {
+        const data = snapshot.val();
+        logs = data ? Object.values(data) : [];
+        renderLogs();
+    });
+}
 
-function toggleNextServiceFields() { 
-    const isChecked = document.getElementById('next-service-toggle').checked; 
-    document.getElementById('next-service-freq-group').style.display = isChecked ? 'flex' : 'none'; 
-    document.getElementById('next-service-hours-group').style.display = isChecked ? 'flex' : 'none'; 
-    if (isChecked) { 
-        document.getElementById('next-service-freq').value = 'weekly'; 
-        calculateNextServiceDate(); 
-    } else { 
-        document.getElementById('next-service-date-group').style.display = 'none'; 
-    } 
-} 
+function toggleNextServiceFields() {
+    const isChecked = document.getElementById('next-service-toggle').checked;
+    document.getElementById('next-service-freq-group').style.display = isChecked ? 'flex' : 'none';
+    document.getElementById('next-service-hours-group').style.display = isChecked ? 'flex' : 'none';
+    if (isChecked) {
+        document.getElementById('next-service-freq').value = 'weekly';
+        calculateNextServiceDate();
+    } else {
+        document.getElementById('next-service-date-group').style.display = 'none';
+    }
+}
 
-function calculateNextServiceDate() { 
-    const freq = document.getElementById('next-service-freq').value; 
-    const dateGroup = document.getElementById('next-service-date-group'); 
-    const logDateVal = document.getElementById('log-date').value; 
+function calculateNextServiceDate() {
+    const freq = document.getElementById('next-service-freq').value;
+    const dateGroup = document.getElementById('next-service-date-group');
+    const logDateVal = document.getElementById('log-date').value;
     
-    dateGroup.style.display = (freq === 'custom') ? 'flex' : 'none'; 
-    if (!logDateVal || freq === 'custom') return; 
+    dateGroup.style.display = (freq === 'custom') ? 'flex' : 'none';
+    if (!logDateVal || freq === 'custom') return;
 
-    let baseDate = new Date(logDateVal); 
-    if (freq === 'weekly') baseDate.setDate(baseDate.getDate() + 7); 
-    else if (freq === 'monthly') baseDate.setMonth(baseDate.getMonth() + 1); 
-    else if (freq === 'yearly') baseDate.setFullYear(baseDate.getFullYear() + 1); 
+    let baseDate = new Date(logDateVal);
+    if (freq === 'weekly') baseDate.setDate(baseDate.getDate() + 7);
+    else if (freq === 'monthly') baseDate.setMonth(baseDate.getMonth() + 1);
+    else if (freq === 'yearly') baseDate.setFullYear(baseDate.getFullYear() + 1);
     
-    document.getElementById('next-service-date').value = baseDate.toISOString().split('T')[0]; 
-} 
+    document.getElementById('next-service-date').value = baseDate.toISOString().split('T')[0];
+}
 
-function updateGlobalDatalists() { 
-    const unique = key => [...new Set(logs.map(l => l[key]))].filter(Boolean); 
-    populateDatalist('vessel-list', unique('vesselName')); 
-    populateDatalist('equipment-list', unique('equipment')); 
-    populateDatalist('tech-list', unique('techName')); 
-    populateDatalist('hours-list', unique('engineHours')); 
-    populateDatalist('defect-list', unique('defect')); 
-    populateDatalist('workdone-list', unique('workDone')); 
+function updateGlobalDatalists() {
+    const unique = key => [...new Set(logs.map(l => l[key]))].filter(Boolean);
+    populateDatalist('vessel-list', unique('vesselName'));
+    populateDatalist('equipment-list', unique('equipment'));
+    populateDatalist('tech-list', unique('techName'));
+    populateDatalist('hours-list', unique('engineHours'));
+    populateDatalist('defect-list', unique('defect'));
+    populateDatalist('workdone-list', unique('workDone'));
 
-    let partNames = new Set(), partNos = new Set(), partQtys = new Set(), partCosts = new Set(); 
-    logs.forEach(l => { 
-        l.parts?.forEach(p => { 
-            if (p.name) partNames.add(p.name); 
-            if (p.partNo) partNos.add(p.partNo); 
-            if (p.qty) partQtys.add(p.qty); 
-            if (p.cost) partCosts.add(p.cost); 
-        }); 
-    }); 
+    let partNames = new Set(), partNos = new Set(), partQtys = new Set(), partCosts = new Set();
+    logs.forEach(l => {
+        l.parts?.forEach(p => {
+            if (p.name) partNames.add(p.name);
+            if (p.partNo) partNos.add(p.partNo);
+            if (p.qty) partQtys.add(p.qty);
+            if (p.cost) partCosts.add(p.cost);
+        });
+    });
 
-    populateDatalist('partname-list', [...partNames]); 
-    populateDatalist('partno-list', [...partNos]); 
-    populateDatalist('partqty-list', [...partQtys]); 
-    populateDatalist('partcost-list', [...partCosts]); 
+    populateDatalist('partname-list', [...partNames]);
+    populateDatalist('partno-list', [...partNos]);
+    populateDatalist('partqty-list', [...partQtys]);
+    populateDatalist('partcost-list', [...partCosts]);
 
-    const vesselFilterSelect = document.getElementById('filter-vessel'); 
-    const currentVal = vesselFilterSelect.value; 
-    vesselFilterSelect.innerHTML = '<option value="ALL">All Vessels</option>' + unique('vesselName').map(v => `<option value="${v}">${v}</option>`).join(''); 
-    vesselFilterSelect.value = currentVal; 
-} 
+    const vesselFilterSelect = document.getElementById('filter-vessel');
+    const currentVal = vesselFilterSelect.value;
+    vesselFilterSelect.innerHTML = '<option value="ALL">All Vessels</option>' + unique('vesselName').map(v => `<option value="${v}">${v}</option>`).join('');
+    vesselFilterSelect.value = currentVal;
+}
 
-function populateDatalist(id, array) { 
-    const dl = document.getElementById(id); 
-    if (dl) dl.innerHTML = array.map(item => `<option value="${item}">`).join(''); 
-} 
+function populateDatalist(id, array) {
+    const dl = document.getElementById(id);
+    if (dl) dl.innerHTML = array.map(item => `<option value="${item}">`).join('');
+}
 
-function handleFormSubmit(event) { 
-    event.preventDefault(); 
-    const idField = document.getElementById('log-id').value; 
-    const logId = idField ? idField : 'log_' + Date.now(); 
+function handleFormSubmit(event) {
+    event.preventDefault();
+    const idField = document.getElementById('log-id').value;
+    const logId = idField ? idField : 'log_' + Date.now();
 
-    let parts = []; 
-    document.querySelectorAll('#parts-rows-wrapper .part-row').forEach(row => { 
-        const name = row.querySelector('.part-name').value.trim(); 
-        if (name) { 
-            parts.push({ 
-                name, 
-                partNo: row.querySelector('.part-number').value.trim(), 
-                qty: row.querySelector('.part-qty').value.trim(), 
-                cost: row.querySelector('.part-cost').value.trim() 
-            }); 
-        } 
-    }); 
+    let parts = [];
+    document.querySelectorAll('#parts-rows-wrapper .part-row').forEach(row => {
+        const name = row.querySelector('.part-name').value.trim();
+        if (name) {
+            parts.push({
+                name,
+                partNo: row.querySelector('.part-number').value.trim(),
+                qty: row.querySelector('.part-qty').value.trim(),
+                cost: row.querySelector('.part-cost').value.trim()
+            });
+        }
+    });
 
-    const hasNextService = document.getElementById('next-service-toggle').checked; 
-    const existingLog = logs.find(l => l.id === logId); 
+    const hasNextService = document.getElementById('next-service-toggle').checked;
+    const existingLog = logs.find(l => l.id === logId);
 
-    const newLog = { 
-        id: logId, 
-        vesselName: document.getElementById('vessel-name').value.trim(), 
-        equipment: document.getElementById('equipment').value.trim(), 
-        category: document.getElementById('category').value, 
-        logDate: document.getElementById('log-date').value, 
-        vesselStatus: document.getElementById('vessel-status').value, 
-        techName: document.getElementById('tech-name').value.trim(), 
-        engineHours: document.getElementById('engine-hours').value.trim(), 
-        signoff: document.getElementById('signoff').checked, 
-        defect: document.getElementById('defect').value.trim(), 
-        workDone: document.getElementById('work-done').value.trim(), 
-        laborHours: parseFloat(document.getElementById('labor-hours').value) || 0, 
-        parts, 
-        hasNextService, 
-        nextServiceFreq: hasNextService ? document.getElementById('next-service-freq').value : '', 
-        nextServiceDate: hasNextService ? document.getElementById('next-service-date').value : '', 
-        nextServiceHours: hasNextService ? document.getElementById('next-service-hours').value.trim() : '', 
-        mediaList: [...currentMediaList], 
-        isCompleted: existingLog ? existingLog.isCompleted : true, 
-        timestamp: existingLog ? existingLog.timestamp : Date.now() 
-    }; 
+    const newLog = {
+        id: logId,
+        vesselName: document.getElementById('vessel-name').value.trim(),
+        equipment: document.getElementById('equipment').value.trim(),
+        category: document.getElementById('category').value,
+        logDate: document.getElementById('log-date').value,
+        vesselStatus: document.getElementById('vessel-status').value,
+        techName: document.getElementById('tech-name').value.trim(),
+        engineHours: document.getElementById('engine-hours').value.trim(),
+        signoff: document.getElementById('signoff').checked,
+        defect: document.getElementById('defect').value.trim(),
+        workDone: document.getElementById('work-done').value.trim(),
+        laborHours: parseFloat(document.getElementById('labor-hours').value) || 0,
+        parts,
+        hasNextService,
+        nextServiceFreq: hasNextService ? document.getElementById('next-service-freq').value : '',
+        nextServiceDate: hasNextService ? document.getElementById('next-service-date').value : '',
+        nextServiceHours: hasNextService ? document.getElementById('next-service-hours').value.trim() : '',
+        mediaList: [...currentMediaList],
+        isCompleted: existingLog ? existingLog.isCompleted : true,
+        timestamp: existingLog ? existingLog.timestamp : Date.now()
+    };
 
-    dbRef.child(logId).set(newLog).then(() => resetForm()).catch(err => alert("Error saving: " + err.message)); 
-} 
+    dbRef.child(logId).set(newLog).then(() => resetForm()).catch(err => alert("Error saving: " + err.message));
+}
 
-function resetForm() { 
-    document.getElementById('log-form').reset(); 
-    document.getElementById('log-id').value = ''; 
-    document.getElementById('log-date').valueAsDate = new Date(); 
-    document.getElementById('parts-rows-wrapper').innerHTML = ''; 
-    currentMediaList = []; 
-    updateMediaPreviews(); 
-    document.getElementById('submit-btn').innerText = "SAVE LOG ENTRY"; 
-    document.getElementById('cancel-btn').style.display = 'none'; 
-    document.getElementById('form-title').innerText = "📝 New Log Entry"; 
-    document.getElementById('next-service-toggle').checked = false; 
-    toggleNextServiceFields(); 
-    document.getElementById('signoff').checked = true; 
-    handleVesselStatusChange(); 
-} 
+function resetForm() {
+    document.getElementById('log-form').reset();
+    document.getElementById('log-id').value = '';
+    document.getElementById('log-date').valueAsDate = new Date();
+    document.getElementById('parts-rows-wrapper').innerHTML = '';
+    currentMediaList = [];
+    updateMediaPreviews();
+    document.getElementById('submit-btn').innerText = "SAVE LOG ENTRY";
+    document.getElementById('cancel-btn').style.display = 'none';
+    document.getElementById('form-title').innerText = "📝 New Log Entry";
+    document.getElementById('next-service-toggle').checked = false;
+    toggleNextServiceFields();
+    document.getElementById('signoff').checked = true;
+    handleVesselStatusChange();
+}
 
-function editLog(id) { 
-    const log = logs.find(l => l.id === id); 
-    if (!log) return; 
+function editLog(id) {
+    const log = logs.find(l => l.id === id);
+    if (!log) return;
 
-    document.getElementById('log-id').value = log.id; 
-    document.getElementById('vessel-name').value = log.vesselName || ''; 
-    document.getElementById('equipment').value = log.equipment || ''; 
-    document.getElementById('category').value = log.category || ''; 
-    document.getElementById('log-date').value = log.logDate || ''; 
-    document.getElementById('vessel-status').value = log.vesselStatus || ''; 
-    document.getElementById('tech-name').value = log.techName || ''; 
-    document.getElementById('engine-hours').value = log.engineHours || ''; 
-    document.getElementById('signoff').checked = log.signoff !== false; 
-    document.getElementById('defect').value = log.defect || ''; 
-    document.getElementById('work-done').value = log.workDone || ''; 
-    document.getElementById('labor-hours').value = log.laborHours || ''; 
+    document.getElementById('log-id').value = log.id;
+    document.getElementById('vessel-name').value = log.vesselName || '';
+    document.getElementById('equipment').value = log.equipment || '';
+    document.getElementById('category').value = log.category || '';
+    document.getElementById('log-date').value = log.logDate || '';
+    document.getElementById('vessel-status').value = log.vesselStatus || '';
+    document.getElementById('tech-name').value = log.techName || '';
+    document.getElementById('engine-hours').value = log.engineHours || '';
+    document.getElementById('signoff').checked = log.signoff !== false;
+    document.getElementById('defect').value = log.defect || '';
+    document.getElementById('work-done').value = log.workDone || '';
+    document.getElementById('labor-hours').value = log.laborHours || '';
 
-    document.getElementById('parts-rows-wrapper').innerHTML = ''; 
-    log.parts?.forEach(p => addPartRow(p.name, p.partNo, p.qty, p.cost)); 
+    document.getElementById('parts-rows-wrapper').innerHTML = '';
+    log.parts?.forEach(p => addPartRow(p.name, p.partNo, p.qty, p.cost));
 
-    currentMediaList = log.mediaList ? [...log.mediaList] : []; 
-    updateMediaPreviews(); 
+    currentMediaList = log.mediaList ? [...log.mediaList] : [];
+    updateMediaPreviews();
 
-    const nextToggle = document.getElementById('next-service-toggle'); 
-    nextToggle.checked = !!log.hasNextService; 
-    toggleNextServiceFields(); 
-    if (log.hasNextService) { 
-        document.getElementById('next-service-freq').value = log.nextServiceFreq || 'weekly'; 
-        calculateNextServiceDate(); 
-        if (log.nextServiceDate) document.getElementById('next-service-date').value = log.nextServiceDate; 
-        document.getElementById('next-service-hours').value = log.nextServiceHours || ''; 
-    } 
+    const nextToggle = document.getElementById('next-service-toggle');
+    nextToggle.checked = !!log.hasNextService;
+    toggleNextServiceFields();
+    if (log.hasNextService) {
+        document.getElementById('next-service-freq').value = log.nextServiceFreq || 'weekly';
+        calculateNextServiceDate();
+        if (log.nextServiceDate) document.getElementById('next-service-date').value = log.nextServiceDate;
+        document.getElementById('next-service-hours').value = log.nextServiceHours || '';
+    }
 
-    document.getElementById('submit-btn').innerText = "UPDATE LOG ENTRY"; 
-    document.getElementById('cancel-btn').style.display = 'block'; 
-    document.getElementById('form-title').innerText = "✏️ Edit Log Entry"; 
-    updateSignoffUI(); 
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-} 
+    document.getElementById('submit-btn').innerText = "UPDATE LOG ENTRY";
+    document.getElementById('cancel-btn').style.display = 'block';
+    document.getElementById('form-title').innerText = "✏️ Edit Log Entry";
+    updateSignoffUI();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-function deleteLog(id) { 
-    if (confirm("Are you sure you want to delete this log entry?")) { 
-        dbRef.child(id).remove(); 
-    } 
-} 
+function deleteLog(id) {
+    if (confirm("Are you sure you want to delete this log entry?")) {
+        dbRef.child(id).remove();
+    }
+}
 
-function completeRecurringTask(id) { 
-    const log = logs.find(l => l.id === id); 
-    if (!log) return; 
-    const newId = 'log_' + Date.now(); 
-    const newLog = { ...log, id: newId, logDate: new Date().toISOString().split('T')[0], isCompleted: true, timestamp: Date.now() }; 
-    dbRef.child(newId).set(newLog); 
-} 
+function completeRecurringTask(id) {
+    const log = logs.find(l => l.id === id);
+    if (!log) return;
+    const newId = 'log_' + Date.now();
+    const newLog = { ...log, id: newId, logDate: new Date().toISOString().split('T')[0], isCompleted: true, timestamp: Date.now() };
+    dbRef.child(newId).set(newLog);
+}
 
-function renderLogs() { 
-    updateGlobalDatalists(); 
-    const container = document.getElementById('logs-container'); 
-    const filters = { 
-        vessel: document.getElementById('filter-vessel').value, 
-        category: document.getElementById('filter-category').value, 
-        status: document.getElementById('filter-status').value, 
-        recurring: document.getElementById('filter-recurring').value, 
-        sort: document.getElementById('sort-order').value, 
-        search: document.getElementById('search-input').value.toLowerCase() 
-    }; 
+function renderLogs() {
+    updateGlobalDatalists();
+    const container = document.getElementById('logs-container');
+    const filters = {
+        vessel: document.getElementById('filter-vessel').value,
+        category: document.getElementById('filter-category').value,
+        status: document.getElementById('filter-status').value,
+        recurring: document.getElementById('filter-recurring').value,
+        sort: document.getElementById('sort-order').value,
+        search: document.getElementById('search-input').value.toLowerCase()
+    };
 
-    let filtered = logs.filter(l => { 
-        if (filters.vessel !== 'ALL' && l.vesselName !== filters.vessel) return false; 
-        if (filters.category !== 'ALL' && l.category !== filters.category) return false; 
+    let filtered = logs.filter(l => {
+        if (filters.vessel !== 'ALL' && l.vesselName !== filters.vessel) return false;
+        if (filters.category !== 'ALL' && l.category !== filters.category) return false;
 
-        const isWIP = l.isCompleted === false || ['Work in Progress (WIP)', 'Out of Service (Unseaworthy)'].includes(l.vesselStatus) || l.vesselStatus?.includes('Parts Pending'); 
-        if (filters.status === 'COMPLETED' && isWIP) return false; 
-        if (filters.status === 'WIP' && !isWIP) return false; 
+        const isWIP = l.isCompleted === false || ['Work in Progress (WIP)', 'Out of Service (Unseaworthy)'].includes(l.vesselStatus) || l.vesselStatus?.includes('Parts Pending');
+        if (filters.status === 'COMPLETED' && isWIP) return false;
+        if (filters.status === 'WIP' && !isWIP) return false;
 
-        if (filters.recurring === 'RECURRING' && !l.hasNextService) return false; 
-        if (filters.recurring === 'NON-RECURRING' && l.hasNextService) return false; 
+        if (filters.recurring === 'RECURRING' && !l.hasNextService) return false;
+        if (filters.recurring === 'NON-RECURRING' && l.hasNextService) return false;
 
-        if (filters.search) { 
-            const combined = `${l.vesselName} ${l.equipment} ${l.category} ${l.techName} ${l.defect} ${l.workDone}`.toLowerCase(); 
-            if (!combined.includes(filters.search)) return false; 
-        } 
-        return true; 
-    }); 
+        if (filters.search) {
+            const combined = `${l.vesselName} ${l.equipment} ${l.category} ${l.techName} ${l.defect} ${l.workDone}`.toLowerCase();
+            if (!combined.includes(filters.search)) return false;
+        }
+        return true;
+    });
 
-    filtered.sort((a, b) => { 
-        if (filters.sort === 'NEWEST') return (b.timestamp || 0) - (a.timestamp || 0); 
-        if (filters.sort === 'OLDEST') return (a.timestamp || 0) - (b.timestamp || 0); 
-        if (filters.sort === 'VESSEL') return (a.vesselName || '').localeCompare(b.vesselName || ''); 
-        if (filters.sort === 'COST_HIGH') return calculateLogTotalCost(b) - calculateLogTotalCost(a); 
-        return 0; 
-    }); 
+    filtered.sort((a, b) => {
+        if (filters.sort === 'NEWEST') return (b.timestamp || 0) - (a.timestamp || 0);
+        if (filters.sort === 'OLDEST') return (a.timestamp || 0) - (b.timestamp || 0);
+        if (filters.sort === 'VESSEL') return (a.vesselName || '').localeCompare(b.vesselName || '');
+        if (filters.sort === 'COST_HIGH') return calculateLogTotalCost(b) - calculateLogTotalCost(a);
+        return 0;
+    });
 
-    if (filtered.length === 0) { 
-        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">No maintenance log entries found matching current filters.</div>`; 
-        updateKPIs(); 
-        return; 
-    } 
+    if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">No maintenance log entries found matching current filters.</div>`;
+        updateKPIs();
+        return;
+    }
 
-    container.innerHTML = filtered.map(l => { 
-        const isOOS = l.vesselStatus === 'Out of Service (Unseaworthy)'; 
-        const isPartsPending = l.vesselStatus?.includes('Parts Pending'); 
-        const badgeClass = isOOS ? 'badge-danger' : (isPartsPending ? 'badge-warning' : (l.vesselStatus === 'Work in Progress (WIP)' ? 'badge-info' : 'badge-success')); 
-        const cardClass = isOOS ? 'unseaworthy' : (isPartsPending ? 'parts-pending' : (l.vesselStatus === 'Work in Progress (WIP)' ? 'wip-status' : '')); 
+    container.innerHTML = filtered.map(l => {
+        const isOOS = l.vesselStatus === 'Out of Service (Unseaworthy)';
+        const isPartsPending = l.vesselStatus?.includes('Parts Pending');
+        const badgeClass = isOOS ? 'badge-danger' : (isPartsPending ? 'badge-warning' : (l.vesselStatus === 'Work in Progress (WIP)' ? 'badge-info' : 'badge-success'));
+        const cardClass = isOOS ? 'unseaworthy' : (isPartsPending ? 'parts-pending' : (l.vesselStatus === 'Work in Progress (WIP)' ? 'wip-status' : ''));
 
-        let partsTableHtml = ''; 
-        let totalPartsCost = 0; 
-        if (l.parts?.length > 0) { 
-            const rows = l.parts.map(p => { 
-                totalPartsCost += parseFloat(p.cost) || 0; 
-                return `<tr><td>${p.name}</td><td>${p.partNo || 'N/A'}</td><td>${p.qty || '1'}</td><td>${isNaN(p.cost) ? p.cost : '$' + Number(p.cost).toFixed(2)}</td></tr>`; 
-            }).join(''); 
-            partsTableHtml = ` 
-                <div style="margin-top: 8px;"> 
-                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Parts Installed / Needed:</span> 
-                    <table class="parts-list-table"> 
-                        <thead><tr><th>Part Name</th><th>P/N</th><th>Qty</th><th>Cost</th></tr></thead> 
-                        <tbody>${rows}</tbody> 
-                    </table> 
-                </div>`; 
-        } 
+        let partsTableHtml = '';
+        let totalPartsCost = 0;
+        if (l.parts?.length > 0) {
+            const rows = l.parts.map(p => {
+                totalPartsCost += parseFloat(p.cost) || 0;
+                return `<tr><td>${p.name}</td><td>${p.partNo || 'N/A'}</td><td>${p.qty || '1'}</td><td>${isNaN(p.cost) ? p.cost : '$' + Number(p.cost).toFixed(2)}</td></tr>`;
+            }).join('');
+            partsTableHtml = `
+                <div style="margin-top: 8px;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Parts Installed / Needed:</span>
+                    <table class="parts-list-table">
+                        <thead><tr><th>Part Name</th><th>P/N</th><th>Qty</th><th>Cost</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
+        }
 
-        let mediaHtml = ''; 
-        if (l.mediaList?.length > 0) { 
-            const mediaItems = l.mediaList.map(m => m.type?.startsWith('video') ? `<video controls src="${m.base64}"></video>` : `<img src="${m.base64}" alt="Attachment">`).join(''); 
-            mediaHtml = `<div class="log-media" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">${mediaItems}</div>`; 
-        } 
+        let mediaHtml = '';
+        if (l.mediaList?.length > 0) {
+            const mediaItems = l.mediaList.map(m => m.type?.startsWith('video') ? `<video controls src="${m.base64}"></video>` : `<img src="${m.base64}" alt="Attachment">`).join('');
+            mediaHtml = `<div class="log-media" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">${mediaItems}</div>`;
+        }
 
-        return ` 
-            <div class="log-card ${cardClass}"> 
-                <div class="log-header"> 
-                    <div> 
-                        <div class="log-title">⚓ ${l.vesselName} — ${l.equipment}</div> 
-                        <div class="log-date">Logged on ${l.logDate} by ${l.techName} ${l.engineHours ? '| ' + l.engineHours : ''}</div> 
-                    </div> 
-                    <span class="badge ${badgeClass}">${l.vesselStatus}</span> 
-                </div> 
-                <div class="log-details"> 
-                    <div class="log-detail-item"><span>Category</span><strong>${l.category}</strong></div> 
-                    <div class="log-detail-item"><span>Status</span><strong>${l.signoff ? '✅ Approved' : '❌ Restricted'}</strong></div> 
-                    <div class="log-detail-item"><span>Total Cost</span><strong>$${((Number(l.laborHours) || 0) * 50 + totalPartsCost).toFixed(2)}</strong></div> 
-                    ${l.hasNextService ? `<div class="log-detail-item"><span>Next Due</span><strong>${l.nextServiceDate || 'N/A'}</strong></div>` : ''} 
-                </div> 
-                ${l.defect ? `<div><span><strong>Defect:</strong> ${l.defect}</span></div>` : ''} 
-                <div><span><strong>Work Done:</strong> ${l.workDone}</span></div> 
-                ${partsTableHtml} 
-                ${mediaHtml} 
-                <div class="log-actions"> 
-                    ${l.hasNextService ? `<button class="btn-complete-recurring" onclick="completeRecurringTask('${l.id}')">✔️ Complete & Re-Log</button>` : ''} 
-                    <button class="btn-edit" onclick="editLog('${l.id}')">✏️ Edit</button> 
-                    <button class="btn-delete" onclick="deleteLog('${l.id}')">🗑️ Delete</button> 
-                </div> 
-            </div>`; 
-    }).join(''); 
+        return `
+            <div class="log-card ${cardClass}">
+                <div class="log-header">
+                    <div>
+                        <div class="log-title">⚓ ${l.vesselName} — ${l.equipment}</div>
+                        <div class="log-date">Logged on ${l.logDate} by ${l.techName} ${l.engineHours ? '| ' + l.engineHours : ''}</div>
+                    </div>
+                    <span class="badge ${badgeClass}">${l.vesselStatus}</span>
+                </div>
+                <div class="log-details">
+                    <div class="log-detail-item"><span>Category</span><strong>${l.category}</strong></div>
+                    <div class="log-detail-item"><span>Status</span><strong>${l.signoff ? '✅ Approved' : '❌ Restricted'}</strong></div>
+                    <div class="log-detail-item"><span>Total Cost</span><strong>$${((Number(l.laborHours) || 0) * 50 + totalPartsCost).toFixed(2)}</strong></div>
+                    ${l.hasNextService ? `<div class="log-detail-item"><span>Next Due</span><strong>${l.nextServiceDate || 'N/A'}</strong></div>` : ''}
+                </div>
+                ${l.defect ? `<div><span><strong>Defect:</strong> ${l.defect}</span></div>` : ''}
+                <div><span><strong>Work Done:</strong> ${l.workDone}</span></div>
+                ${partsTableHtml}
+                ${mediaHtml}
+                <div class="log-actions">
+                    ${l.hasNextService ? `<button class="btn-complete-recurring" onclick="completeRecurringTask('${l.id}')">✔️ Complete & Re-Log</button>` : ''}
+                    <button class="btn-edit" onclick="editLog('${l.id}')">✏️ Edit</button>
+                    <button class="btn-delete" onclick="deleteLog('${l.id}')">🗑️ Delete</button>
+                </div>
+            </div>`;
+    }).join('');
 
-    updateKPIs(); 
-} 
+    updateKPIs();
+}
 
-function calculateLogTotalCost(l) { 
-    const partsCost = l.parts?.reduce((sum, p) => sum + (parseFloat(p.cost) || 0), 0) || 0; 
-    return partsCost + ((parseFloat(l.laborHours) || 0) * 50); 
-} 
+function calculateLogTotalCost(l) {
+    const partsCost = l.parts?.reduce((sum, p) => sum + (parseFloat(p.cost) || 0), 0) || 0;
+    return partsCost + ((parseFloat(l.laborHours) || 0) * 50);
+}
 
-function updateKPIs() { 
-    document.getElementById('kpi-total-logs').innerText = logs.length; 
-    document.getElementById('kpi-oos-vessels').innerText = logs.filter(l => l.vesselStatus === 'Out of Service (Unseaworthy)').length; 
-    document.getElementById('kpi-parts-pending').innerText = logs.filter(l => l.vesselStatus?.includes('Parts Pending')).length; 
+function updateKPIs() {
+    document.getElementById('kpi-total-logs').innerText = logs.length;
+    document.getElementById('kpi-oos-vessels').innerText = logs.filter(l => l.vesselStatus === 'Out of Service (Unseaworthy)').length;
+    document.getElementById('kpi-parts-pending').innerText = logs.filter(l => l.vesselStatus?.includes('Parts Pending')).length;
     
-    const totalSpend = logs.reduce((sum, l) => sum + calculateLogTotalCost(l), 0); 
-    document.getElementById('kpi-total-spend').innerText = '$' + totalSpend.toFixed(2); 
+    const totalSpend = logs.reduce((sum, l) => sum + calculateLogTotalCost(l), 0);
+    document.getElementById('kpi-total-spend').innerText = '$' + totalSpend.toFixed(2);
 
-    updateChart(); 
-} 
+    updateChart();
+}
 
-function initChart() { 
-    const ctx = document.getElementById('categoryChart').getContext('2d'); 
-    myChart = new Chart(ctx, { 
-        type: 'bar', 
-        data: { labels: [], datasets: [{ data: [], backgroundColor: '#38bdf8', borderRadius: 4 }] }, 
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            plugins: { legend: { display: false } }, 
-            scales: { 
-                y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: '#334155' } }, 
-                x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } } 
-            } 
-        } 
-    }); 
-} 
+function initChart() {
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: [], datasets: [{ data: [], backgroundColor: '#38bdf8', borderRadius: 4 }] },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: '#334155' } },
+                x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }
+            }
+        }
+    });
+}
 
-function updateChart() { 
-    if (!myChart) return; 
-    const counts = {}; 
-    logs.forEach(l => { counts[l.category || 'General Routine Service'] = (counts[l.category || 'General Routine Service'] || 0) + 1; }); 
-    myChart.data.labels = Object.keys(counts); 
-    myChart.data.datasets[0].data = Object.values(counts); 
-    myChart.update(); 
-} 
+function updateChart() {
+    if (!myChart) return;
+    const counts = {};
+    logs.forEach(l => { counts[l.category || 'General Routine Service'] = (counts[l.category || 'General Routine Service'] || 0) + 1; });
+    myChart.data.labels = Object.keys(counts);
+    myChart.data.datasets[0].data = Object.values(counts);
+    myChart.update();
+}
 
-function exportJSON() { 
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(logs, null, 2)); 
-    const dl = document.createElement('a'); 
-    dl.setAttribute("href", dataStr); 
-    dl.setAttribute("download", `vessel_logs_${new Date().toISOString().split('T')[0]}.json`); 
-    dl.click(); 
-} 
+function exportJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(logs, null, 2));
+    const dl = document.createElement('a');
+    dl.setAttribute("href", dataStr);
+    dl.setAttribute("download", `vessel_logs_${new Date().toISOString().split('T')[0]}.json`);
+    dl.click();
+}
 
-function importJSON(event) { 
-    const file = event.target.files[0]; 
-    if (!file) return; 
-    const reader = new FileReader(); 
-    reader.onload = e => { 
-        try { 
-            const imported = JSON.parse(e.target.result); 
-            if (Array.isArray(imported)) { 
-                let updates = {}; 
-                imported.forEach(item => { if (item.id) updates[item.id] = item; }); 
-                dbRef.set(updates).then(() => alert("Data imported successfully!")); 
-            } else { 
-                alert("Invalid JSON format."); 
-            } 
-        } catch (err) { 
-            alert("Error parsing JSON: " + err.message); 
-        } 
-    }; 
-    reader.readAsText(file); 
-} 
-</script> 
-</body> 
+function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (Array.isArray(imported)) {
+                let updates = {};
+                imported.forEach(item => { if (item.id) updates[item.id] = item; });
+                dbRef.set(updates).then(() => alert("Data imported successfully!"));
+            } else {
+                alert("Invalid JSON format.");
+            }
+        } catch (err) {
+            alert("Error parsing JSON: " + err.message);
+        }
+    };
+    reader.readAsText(file);
+}
+</script>
+</body>
 </html>
