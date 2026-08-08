@@ -17,7 +17,7 @@
     --accent-blue: #38bdf8; 
     --accent-hover: #0284c7; 
     --text-main: #f8fafc; 
-    --text-muted: #94a3b8; 
+    --text-muted: #f8fafc; 
     --success: #22c55e; 
     --warning: #f59e0b; 
     --danger: #ef4444; 
@@ -33,7 +33,7 @@ h1 { font-size: 1.75rem; color: var(--accent-blue); display: flex; align-items: 
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; } 
 .form-group { display: flex; flex-direction: column; gap: 6px; } 
 .form-group.full-width { grid-column: 1 / -1; } 
-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; } 
+label { font-size: 0.8rem; font-weight: 600; color: var(--text-main); text-transform: uppercase; } 
 input, select, textarea { background-color: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: var(--text-main); font-size: 0.95rem; outline: none; width: 100%; transition: border-color 0.2s; } 
 input:focus, select:focus, textarea:focus { border-color: var(--accent-blue); } 
 textarea { resize: vertical; min-height: 70px; } 
@@ -56,17 +56,17 @@ textarea { resize: vertical; min-height: 70px; }
 .log-card.wip-status { border-left-color: var(--info); } 
 .log-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; gap: 8px; } 
 .log-title { font-size: 1.1rem; font-weight: 700; color: var(--accent-blue); } 
-.log-date { font-size: 0.85rem; color: var(--text-muted); } 
+.log-date { font-size: 0.85rem; color: var(--text-main); } 
 .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-block; } 
 .badge-success { background: rgba(34, 197, 94, 0.2); color: var(--success); } 
 .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); } 
 .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); } 
 .badge-info { background: rgba(168, 85, 247, 0.2); color: var(--info); } 
 .log-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.9rem; } 
-.log-detail-item span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; } 
+.log-detail-item span { display: block; font-size: 0.75rem; color: var(--text-main); text-transform: uppercase; } 
 .parts-list-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 0.85rem; } 
 .parts-list-table th, .parts-list-table td { border: 1px solid var(--border-color); padding: 6px 10px; text-align: left; } 
-.parts-list-table th { background: #0f172a; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; } 
+.parts-list-table th { background: #0f172a; color: var(--text-main); font-size: 0.75rem; text-transform: uppercase; } 
 .log-media img, .log-media video { max-width: 150px; max-height: 150px; border-radius: 6px; border: 1px solid var(--border-color); object-fit: cover; } 
 .log-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap; } 
 .btn-edit { background: var(--accent-blue); color: #0f172a; } 
@@ -77,7 +77,7 @@ textarea { resize: vertical; min-height: 70px; }
 .header-actions button:hover { background: var(--border-color); } 
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 24px; } 
 .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; } 
-.stat-card h3 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; } 
+.stat-card h3 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-main); letter-spacing: 0.05em; } 
 .stat-card .value { font-size: 2.0rem; font-weight: 700; margin-top: 8px; } 
 .chart-container { position: relative; height: 180px; width: 100%; margin-top: 10px; } 
 </style> 
@@ -163,7 +163,7 @@ textarea { resize: vertical; min-height: 70px; }
                 <div class="form-group full-width"> 
                     <label>Parts Installed / Needed (Optional)</label> 
                     <div class="parts-builder-container"> 
-                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;"> 
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; font-size: 0.75rem; font-weight: 600; color: var(--text-main); text-transform: uppercase;"> 
                             <span>Part Name / Desc</span> 
                             <span>P/N or SKU</span> 
                             <span>Qty / Unit</span> 
@@ -665,7 +665,7 @@ function renderLogs() {
     }); 
 
     if (filtered.length === 0) { 
-        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">No maintenance log entries found matching current filters.</div>`; 
+        container.innerHTML = `<div style="text-align: center; color: var(--text-main); padding: 40px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color);">No maintenance log entries found matching current filters.</div>`; 
         updateKPIs(); 
         return; 
     } 
@@ -685,7 +685,7 @@ function renderLogs() {
             }).join(''); 
             partsTableHtml = ` 
                 <div style="margin-top: 8px;"> 
-                    <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Parts Installed / Needed:</span> 
+                    <span style="font-size: 0.75rem; color: var(--text-main); text-transform: uppercase; font-weight: 600;">Parts Installed / Needed:</span> 
                     <table class="parts-list-table"> 
                         <thead><tr><th>Part Name</th><th>P/N</th><th>Qty</th><th>Cost</th></tr></thead> 
                         <tbody>${rows}</tbody> 
@@ -755,8 +755,8 @@ function initChart() {
             maintainAspectRatio: false, 
             plugins: { legend: { display: false } }, 
             scales: { 
-                y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: '#334155' } }, 
-                x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } } 
+                y: { ticks: { color: '#f8fafc', stepSize: 1 }, grid: { color: '#334155' } }, 
+                x: { ticks: { color: '#f8fafc', font: { size: 10 } }, grid: { display: false } } 
             } 
         } 
     }); 
